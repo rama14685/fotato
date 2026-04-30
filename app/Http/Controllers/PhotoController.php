@@ -13,23 +13,23 @@ use Intervention\Image\Alignment;
 
 class PhotoController extends Controller
 {
-    // Menampilkan form upload foto untuk album tertentu
+    // Menampilkan form upload foto untuk album tertentu (hanya admin)
     public function create(Album $album)
     {
-        // Pastikan hanya pemilik album yang bisa upload
-        if ($album->photographer_id !== auth()->id()) {
-            abort(403, 'Anda tidak memiliki akses ke album ini.');
+        // Hanya admin yang bisa upload foto
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Hanya admin yang dapat mengunggah foto.');
         }
         
         return view('photos.create', compact('album'));
     }
 
-    // Memproses foto, memberi watermark, dan menyimpan ke database
+    // Memproses foto, memberi watermark, dan menyimpan ke database (hanya admin)
     public function store(Request $request, Album $album)
     {
-        // Keamanan: Cek kepemilikan album
-        if ($album->photographer_id !== auth()->id()) {
-            abort(403);
+        // Hanya admin yang bisa upload foto
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Hanya admin yang dapat mengunggah foto.');
         }
 
         // 1. Validasi Input

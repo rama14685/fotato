@@ -23,6 +23,8 @@ class User extends Authenticatable
         'password',
         'role',             // Tambahan baru
         'wallet_balance',   // Tambahan baru
+        'status',           // active atau inactive
+        'face_embedding_id', // For face scan registration
     ];
 
     /**
@@ -54,5 +56,29 @@ class User extends Authenticatable
     public function albums()
     {
         return $this->hasMany(Album::class, 'photographer_id');
+    }
+
+    /**
+     * Relasi ke Transaction sebagai photographer
+     */
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'photographer_id');
+    }
+
+    /**
+     * Relasi ke Transaction sebagai buyer
+     */
+    public function purchases()
+    {
+        return $this->hasMany(Transaction::class, 'buyer_id');
+    }
+
+    /**
+     * Relationship to UserFaceEmbedding (hasOne)
+     */
+    public function faceEmbedding()
+    {
+        return $this->hasOne(UserFaceEmbedding::class, 'id', 'face_embedding_id');
     }
 }

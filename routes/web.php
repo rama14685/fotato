@@ -13,7 +13,7 @@ use App\Http\Controllers\FaceScanController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('landing');
 });
 
 // Public routes untuk catalog
@@ -23,14 +23,18 @@ Route::get('/catalog/{photo}', [CatalogController::class, 'show'])->name('catalo
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    // Route untuk Album (Photographer)
-    Route::get('/albums/create', [AlbumController::class, 'create'])->name('albums.create');
-    Route::post('/albums', [AlbumController::class, 'store'])->name('albums.store');
+    // Route untuk Album (Admin Only)
+    Route::middleware('admin')->group(function () {
+        Route::get('/albums/create', [AlbumController::class, 'create'])->name('albums.create');
+        Route::post('/albums', [AlbumController::class, 'store'])->name('albums.store');
+        
+        // Route untuk Foto (Admin Only)
+        Route::get('/albums/{album}/photos/create', [PhotoController::class, 'create'])->name('photos.create');
+        Route::post('/albums/{album}/photos', [PhotoController::class, 'store'])->name('photos.store');
+    });
+    
+    // Route untuk melihat album (Admin dan Photographer)
     Route::get('/albums/{album}', [AlbumController::class, 'show'])->name('albums.show');
-
-    // Route untuk Foto (Photographer)
-    Route::get('/albums/{album}/photos/create', [PhotoController::class, 'create'])->name('photos.create');
-    Route::post('/albums/{album}/photos', [PhotoController::class, 'store'])->name('photos.store');
 
     // Route untuk Shopping Cart (Buyer)
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -60,4 +64,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});require __DIR__.'/auth.php';
+});
+
+// Admin routes
+require __DIR__.'/admin.php';
+
+require __DIR__.'/auth.php';

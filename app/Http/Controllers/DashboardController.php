@@ -18,17 +18,37 @@ class DashboardController extends Controller
             return redirect()->route('catalog.index');
         }
         
-        // Ambil semua album milik photographer
-        $albums = Album::where('photographer_id', $user->id)
-            ->with('photos')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Untuk admin: tampilkan semua album dari semua fotografer
+        if ($user->role === 'admin') {
+            $albums = Album::with('photos', 'photographer')
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            $totalAlbums = $albums->count();
+            $totalPhotos = $albums->sum(fn($album) => $album->photos->count());
+            
+            // Total pendapatan dari semua fotografer
+            $totalRevenue = Transaction::whereIn('status', ['paid', 'completed'])
+                ->sum('total_amount');
+            
+            return view('dashboard', [
+                'albums' => $albums,
+                'totalAlbums' => $totalAlbums,
+                'totalPhotos' => $totalPhotos,
+                'totalRevenue' => $totalRevenue,
+                'isAdmin' => true,
+            ]);
+        }
         
-        // Hitung total album
-        $totalAlbums = $albums->count();
+        // Untuk photographer: tampilkan statistik (read-only)
+        
+        // Hitung total album miliknya
+        $totalAlbums = Album::where('photographer_id', $user->id)->count();
         
         // Hitung total foto dari semua album
-        $totalPhotos = $albums->sum(fn($album) => $album->photos->count());
+        $totalPhotos = Photo::whereIn('album_id', function($query) use ($user) {
+            $query->select('id')->from('albums')->where('photographer_id', $user->id);
+        })->count();
         
         // Hitung total pendapatan dari transactions yang sudah dibayar/completed
         $totalRevenue = Transaction::where('photographer_id', $user->id)
@@ -36,10 +56,11 @@ class DashboardController extends Controller
             ->sum('total_amount');
         
         return view('dashboard', [
-            'albums' => $albums,
+            'albums' => collect(), // Empty collection since we don't show albums anymore
             'totalAlbums' => $totalAlbums,
             'totalPhotos' => $totalPhotos,
             'totalRevenue' => $totalRevenue,
+            'isAdmin' => false,
         ]);
     }
 }
