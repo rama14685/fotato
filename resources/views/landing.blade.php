@@ -162,9 +162,9 @@
         <div class="container mx-auto px-4 flex justify-between items-center py-3">
             <div class="text-2xl font-bold gradient-text">📸 Fotlist</div>
             <div class="flex gap-6 items-center">
-                <a href="#features" class="text-gray-300 hover:text-white transition text-sm font-medium">✨ Fitur</a>
-                <a href="#buyer-guide" class="text-gray-300 hover:text-white transition text-sm font-medium">🛒 Cara Pembeli</a>
-                <a href="#photographer-guide" class="text-gray-300 hover:text-white transition text-sm font-medium">📸 Cara Fotografer</a>
+                <a href="#features" class="text-gray-300 hover:text-white transition text-sm font-medium">Fitur</a>
+                <a href="#buyer-guide" class="text-gray-300 hover:text-white transition text-sm font-medium">Cara Pembeli</a>
+                <a href="#photographer-guide" class="text-gray-300 hover:text-white transition text-sm font-medium">Cara Fotografer</a>
             </div>
         </div>
     </nav>
@@ -178,10 +178,16 @@
             <div class="overlay"></div>
         </div>
         
-        <!-- Hero Buttons -->
-        <div style="position: absolute; bottom: 60px; left: 0; right: 0; z-index: 20; display: flex; justify-content: center; gap: 16px; padding: 0 16px;">
-            <a href="{{ route('login') }}" class="btn-secondary text-lg">🔑 Masuk</a>
-            <a href="{{ route('register') }}" class="btn-primary text-lg">🚀 Daftar Sekarang</a>
+        <!-- Hero Buttons & CTA -->
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 20; text-align: center;">
+            <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 50px 40px; max-width: 500px;">
+                <h2 style="font-size: 2.5rem; font-weight: 700; color: #ffffff; margin-bottom: 10px; background: linear-gradient(135deg, #ffffff 0%, #b0b0b0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Fotlist</h2>
+                <p style="color: #d0d0d0; font-size: 1.1rem; margin-bottom: 30px; line-height: 1.6;">Platform terbaik untuk menemukan dan menjual foto event Anda dengan teknologi pengenalan wajah AI</p>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <a href="{{ route('login') }}" class="btn-secondary text-lg" style="text-decoration: none; display: block;">Masuk</a>
+                    <a href="{{ route('register') }}" class="btn-primary text-lg" style="text-decoration: none; display: block;">Daftar Sekarang</a>
+                </div>
+            </div>
         </div>
     </section>
 

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
@@ -27,14 +27,17 @@
 
     <!-- Action Buttons -->
     <div class="mb-8 flex gap-3">
+        <a href="{{ route('admin.albums.upload', $album) }}" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition">
+            📤 Upload Foto
+        </a>
         <a href="{{ route('admin.albums.edit', $album) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">
-            Edit Album
+            ✏️ Edit Album
         </a>
         <form method="POST" action="{{ route('admin.albums.destroy', $album) }}" style="display: inline;">
             @csrf
             @method('DELETE')
             <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition" onclick="return confirm('Hapus album ini? Semua foto akan dihapus.')">
-                Hapus Album
+                🗑️ Hapus Album
             </button>
         </form>
     </div>
@@ -50,6 +53,8 @@
                 <div class="border rounded-lg overflow-hidden hover:shadow-lg transition">
                     @if($photo->watermark_path)
                         <img src="{{ asset('storage/' . $photo->watermark_path) }}" alt="Photo" class="w-full h-48 object-cover">
+                    @elseif($photo->original_path)
+                        <img src="{{ asset('storage/' . $photo->original_path) }}" alt="Photo" class="w-full h-48 object-cover">
                     @else
                         <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
                             <span class="text-gray-400">No Image</span>
@@ -61,11 +66,20 @@
                                 <p class="text-sm text-gray-600">Harga</p>
                                 <p class="text-lg font-bold text-gray-900">Rp {{ number_format($photo->price, 0, ',', '.') }}</p>
                             </div>
-                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded font-medium">
-                                {{ ucfirst($photo->processing_status) }}
-                            </span>
+                            @if(isset($photo->processing_status))
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded font-medium">
+                                    {{ ucfirst($photo->processing_status) }}
+                                </span>
+                            @endif
                         </div>
                         <p class="text-xs text-gray-500">{{ $photo->created_at->format('d/m/Y H:i') }}</p>
+                        <form method="POST" action="{{ route('admin.photos.destroy', $photo) }}" class="mt-3" onsubmit="return confirm('Hapus foto ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white text-sm py-2 rounded transition">
+                                🗑️ Hapus Foto
+                            </button>
+                        </form>
                     </div>
                 </div>
             @empty
