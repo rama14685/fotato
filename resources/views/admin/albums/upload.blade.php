@@ -3,536 +3,478 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Foto - {{ $album->title }}</title>
+    <title>Upload Foto – {{ $album->title }} | Fotlist Admin</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        .upload-container {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
+        /* ── Core Layout ────────────────────────────────── */
+        body { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); min-height: 100vh; font-family: 'Inter', sans-serif; color: #e2e8f0; }
 
-        .album-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 30px;
-            border-radius: 12px;
-            color: white;
-            margin-bottom: 30px;
-        }
+        /* ── Glassmorphism Card ─────────────────────────── */
+        .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; }
 
-        .album-header h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
+        /* ── Drop Zone ──────────────────────────────────── */
+        #dropZone { border: 2px dashed rgba(139,92,246,0.5); border-radius: 12px; padding: 60px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; background: rgba(139,92,246,0.05); }
+        #dropZone:hover, #dropZone.drag-over { border-color: #8b5cf6; background: rgba(139,92,246,0.15); transform: scale(1.01); }
 
-        .album-header p {
-            font-size: 0.95rem;
-            opacity: 0.9;
-        }
+        /* ── Progress Items ─────────────────────────────── */
+        .progress-item { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 14px 18px; margin-bottom: 10px; border-left: 4px solid #6366f1; transition: all 0.3s; }
+        .progress-item.scanning { border-left-color: #f59e0b; animation: pulse 1.5s infinite; }
+        .progress-item.uploading { border-left-color: #3b82f6; }
+        .progress-item.success  { border-left-color: #10b981; }
+        .progress-item.error    { border-left-color: #ef4444; }
+        @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.6 } }
 
-        .upload-card {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-            margin-bottom: 30px;
-        }
+        /* ── Photo Grid ─────────────────────────────────── */
+        .photo-thumb { position: relative; aspect-ratio:1; border-radius:10px; overflow:hidden; background:#1e1b4b; cursor:pointer; }
+        .photo-thumb img { width:100%; height:100%; object-fit:cover; }
+        .photo-thumb .face-badge { position:absolute; top:6px; right:6px; background:rgba(16,185,129,0.9); color:#fff; font-size:.65rem; font-weight:700; padding:2px 7px; border-radius:20px; }
+        .photo-thumb .del-btn { position:absolute; top:6px; left:6px; background:rgba(239,68,68,0.85); color:#fff; border:none; width:26px; height:26px; border-radius:50%; cursor:pointer; font-size:1rem; display:none; align-items:center; justify-content:center; transition:.2s; }
+        .photo-thumb:hover .del-btn { display:flex; }
 
-        .drop-zone {
-            border: 2px dashed #cbd5e0;
-            border-radius: 8px;
-            padding: 60px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #f9fafb;
-        }
+        /* ── Buttons ────────────────────────────────────── */
+        .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); color:#fff; border:none; border-radius:10px; padding:12px 28px; font-weight:700; cursor:pointer; transition:all .2s; box-shadow:0 4px 15px rgba(99,102,241,.4); }
+        .btn-primary:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 20px rgba(99,102,241,.5); }
+        .btn-primary:disabled { opacity:.5; cursor:not-allowed; }
+        .btn-secondary { background:rgba(255,255,255,0.08); color:#cbd5e1; border:1px solid rgba(255,255,255,.15); border-radius:10px; padding:12px 24px; font-weight:600; cursor:pointer; transition:all .2s; text-decoration:none; display:inline-block; }
+        .btn-secondary:hover { background:rgba(255,255,255,0.15); }
 
-        .drop-zone.drag-over {
-            border-color: #667eea;
-            background: #eef2ff;
-        }
+        /* ── Loading bar ────────────────────────────────── */
+        .progress-bar-wrap { background: rgba(255,255,255,.1); border-radius:4px; height:6px; overflow:hidden; margin-top:8px; }
+        .progress-bar-fill { height:100%; border-radius:4px; transition: width .3s ease; background: linear-gradient(90deg, #6366f1, #8b5cf6); }
 
-        .drop-zone-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-        }
-
-        .drop-zone-text h3 {
-            font-size: 1.2rem;
-            color: #1f2937;
-            margin-bottom: 5px;
-        }
-
-        .drop-zone-text p {
-            color: #6b7280;
-            font-size: 0.9rem;
-        }
-
-        .upload-methods {
-            display: flex;
-            gap: 20px;
-            margin-top: 30px;
-            flex-wrap: wrap;
-        }
-
-        .upload-method {
-            flex: 1;
-            min-width: 200px;
-            padding: 20px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            text-align: center;
-            background: #f9fafb;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .upload-method:hover {
-            border-color: #667eea;
-            background: #eef2ff;
-        }
-
-        .upload-method input {
-            display: none;
-        }
-
-        .upload-method-icon {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-
-        .upload-method-text {
-            font-size: 0.9rem;
-            color: #4b5563;
-        }
-
-        .price-section {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f3f4f6;
-            border-radius: 8px;
-        }
-
-        .price-section label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #1f2937;
-        }
-
-        .price-input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-
-        .upload-progress {
-            margin-top: 30px;
-        }
-
-        .progress-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px;
-            background: #f9fafb;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #667eea;
-        }
-
-        .progress-item.success {
-            border-left-color: #10b981;
-        }
-
-        .progress-item.error {
-            border-left-color: #ef4444;
-        }
-
-        .progress-item-name {
-            font-weight: 500;
-            color: #1f2937;
-        }
-
-        .progress-item-status {
-            font-size: 0.85rem;
-            color: #6b7280;
-        }
-
-        .progress-bar {
-            width: 200px;
-            height: 4px;
-            background: #e5e7eb;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: #667eea;
-            transition: width 0.2s ease;
-            border-radius: 2px;
-        }
-
-        .uploaded-photos {
-            margin-top: 40px;
-        }
-
-        .uploaded-photos h2 {
-            font-size: 1.3rem;
-            color: #1f2937;
-            margin-bottom: 20px;
-        }
-
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-        }
-
-        .photo-item {
-            position: relative;
-            aspect-ratio: 1;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #f3f4f6;
-        }
-
-        .photo-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .photo-item-delete {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(239, 68, 68, 0.9);
-            color: white;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            transition: all 0.2s ease;
-        }
-
-        .photo-item:hover .photo-item-delete {
-            display: flex;
-        }
-
-        .photo-item-delete:hover {
-            background: rgba(239, 68, 68, 1);
-        }
-
-        .button {
-            padding: 10px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .button:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-        }
-
-        .button-secondary {
-            background: #6b7280;
-        }
-
-        .button-secondary:hover {
-            background: #4b5563;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 30px;
-            justify-content: center;
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            border-left: 4px solid #10b981;
-            color: #065f46;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            border-left: 4px solid #ef4444;
-            color: #7f1d1d;
-        }
-
-        .alert-info {
-            background: #dbeafe;
-            border-left: 4px solid #3b82f6;
-            color: #1e3a8a;
-        }
+        /* ── Status badge ────────────────────────────────── */
+        .status-badge { display:inline-flex; align-items:center; gap:6px; font-size:.8rem; font-weight:600; padding:4px 12px; border-radius:20px; }
+        .badge-scanning { background:rgba(245,158,11,.2); color:#f59e0b; }
+        .badge-upload   { background:rgba(59,130,246,.2); color:#60a5fa; }
+        .badge-done     { background:rgba(16,185,129,.2); color:#34d399; }
+        .badge-error    { background:rgba(239,68,68,.2); color:#f87171; }
+        .badge-skip     { background:rgba(100,116,139,.2); color:#94a3b8; }
     </style>
 </head>
-<body style="background: #f3f4f6;">
-    <div class="upload-container">
-        <!-- Breadcrumb -->
-        <div style="margin-bottom: 20px;">
-            <a href="{{ route('admin.albums.index') }}" style="color: #667eea; text-decoration: none;">← Kembali ke Album</a>
-        </div>
+<body>
+<div class="max-w-4xl mx-auto px-4 py-10">
 
-        <!-- Album Header -->
-        <div class="album-header">
-            <h1>📸 {{ $album->title }}</h1>
-            <p>{{ $album->location }} • {{ $album->event_date->format('d M Y') }}</p>
-            <p style="margin-top: 10px; font-size: 0.9rem;">Total Foto: <strong>{{ $album->photos->count() }}</strong></p>
-        </div>
+    {{-- Breadcrumb --}}
+    <div class="mb-6 flex items-center gap-3 text-sm text-slate-400">
+        <a href="{{ route('admin.albums.index') }}" class="hover:text-white transition">← Albums</a>
+        <span>/</span>
+        <a href="{{ route('admin.albums.show', $album) }}" class="hover:text-white transition">{{ $album->title }}</a>
+        <span>/</span>
+        <span class="text-white">Upload Foto</span>
+    </div>
 
-        <!-- Upload Card -->
-        <div class="upload-card">
-            <h2 style="font-size: 1.5rem; margin-bottom: 20px; color: #1f2937;">Upload Foto</h2>
-
-            <div id="messageContainer"></div>
-
-            <!-- Drop Zone -->
-            <form id="uploadForm" enctype="multipart/form-data">
-                @csrf
-                <div class="drop-zone" id="dropZone">
-                    <div class="drop-zone-icon">📁</div>
-                    <div class="drop-zone-text">
-                        <h3>Drag dan drop foto di sini</h3>
-                        <p>atau klik untuk memilih file</p>
-                    </div>
-                </div>
-
-                <!-- Upload Methods -->
-                <div class="upload-methods">
-                    <label class="upload-method">
-                        <div class="upload-method-icon">📷</div>
-                        <div class="upload-method-text">Pilih Satu File</div>
-                        <input type="file" id="singleFile" accept="image/*" multiple>
-                    </label>
-
-                    <label class="upload-method">
-                        <div class="upload-method-icon">📂</div>
-                        <div class="upload-method-text">Pilih Folder</div>
-                        <input type="file" id="folderFile" accept="image/*" webkitdirectory directory mozdirectory>
-                    </label>
-                </div>
-
-                <!-- Price Section -->
-                <div class="price-section">
-                    <label for="price">Harga per Foto (Rp)</label>
-                    <input type="number" id="price" name="price" class="price-input" placeholder="Contoh: 50000" value="50000" required>
-                </div>
-
-                <!-- Submit Button -->
-                <div class="action-buttons">
-                    <button type="submit" class="button" id="submitBtn" disabled>
-                        🚀 Upload Foto
-                    </button>
-                    <a href="{{ route('admin.albums.show', $album) }}" class="button button-secondary">Selesai</a>
-                </div>
-            </form>
-
-            <!-- Upload Progress -->
-            <div class="upload-progress" id="uploadProgress" style="display: none;"></div>
-        </div>
-
-        <!-- Uploaded Photos -->
-        <div class="uploaded-photos" id="uploadedPhotos" style="display: none;">
-            <h2>Foto yang Diupload</h2>
-            <div class="photo-grid" id="photoGrid"></div>
+    {{-- Header --}}
+    <div class="glass p-6 mb-8" style="background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(139,92,246,.2));">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl" style="background:rgba(99,102,241,.3);">📸</div>
+            <div>
+                <h1 class="text-2xl font-bold text-white">{{ $album->title }}</h1>
+                <p class="text-slate-300 text-sm mt-1">
+                    {{ $album->location ?? 'No location' }}
+                    @if($album->event_date)
+                        &bull; {{ $album->event_date->format('d M Y') }}
+                    @endif
+                    &bull; <strong>{{ $album->photos->count() }}</strong> foto saat ini
+                </p>
+            </div>
         </div>
     </div>
 
-    <script>
-        const dropZone = document.getElementById('dropZone');
-        const uploadForm = document.getElementById('uploadForm');
-        const singleFile = document.getElementById('singleFile');
-        const folderFile = document.getElementById('folderFile');
-        const priceInput = document.getElementById('price');
-        const submitBtn = document.getElementById('submitBtn');
-        const uploadProgress = document.getElementById('uploadProgress');
-        const messageContainer = document.getElementById('messageContainer');
-        const uploadedPhotos = document.getElementById('uploadedPhotos');
-        const photoGrid = document.getElementById('photoGrid');
+    {{-- Alert info --}}
+    <div class="glass p-4 mb-6 border-l-4" style="border-left-color:#f59e0b;">
+        <div class="flex items-start gap-3">
+            <span class="text-2xl">🤖</span>
+            <div>
+                <p class="font-semibold text-amber-400 mb-1">Face Detection Aktif</p>
+                <p class="text-slate-300 text-sm">Setiap foto akan <strong>dianalisis otomatis</strong> menggunakan AI (face-api.js) di browser Anda sebelum diupload. Wajah yang terdeteksi disimpan ke database untuk fitur pencocokan wajah pembeli.</p>
+            </div>
+        </div>
+    </div>
 
-        let selectedFiles = [];
+    {{-- Upload Card --}}
+    <div class="glass p-8 mb-8">
+        <div id="messageBox"></div>
 
-        // Drag and drop events
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-        });
+        {{-- Drop Zone --}}
+        <div id="dropZone">
+            <div class="text-5xl mb-4">☁️</div>
+            <h3 class="text-xl font-bold text-white mb-2">Drag & drop foto di sini</h3>
+            <p class="text-slate-400 text-sm mb-4">atau klik untuk memilih file</p>
+            <div class="flex gap-3 justify-center flex-wrap">
+                <label class="btn-secondary text-sm cursor-pointer">
+                    📷 Pilih File
+                    <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
+                </label>
+                <label class="btn-secondary text-sm cursor-pointer">
+                    📂 Pilih Folder
+                    <input type="file" id="folderInput" accept="image/*" webkitdirectory directory class="hidden">
+                </label>
+            </div>
+        </div>
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('drag-over');
-        });
+        {{-- Price Input --}}
+        <div class="mt-6 p-5 rounded-xl" style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);">
+            <label for="priceInput" class="block text-sm font-semibold text-slate-300 mb-2">💰 Harga per Foto (Rp)</label>
+            <input type="number" id="priceInput" value="50000" min="0" step="1000"
+                   class="w-full px-4 py-3 rounded-lg text-white font-semibold text-lg"
+                   style="background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); outline:none;">
+        </div>
 
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('drag-over');
-            selectedFiles = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
-            updateSubmitButton();
-            showFileInfo();
-        });
+        {{-- Action Buttons --}}
+        <div class="flex gap-4 mt-6 flex-wrap">
+            <button id="startBtn" class="btn-primary" disabled>
+                🚀 Scan &amp; Upload Foto
+            </button>
+            <a href="{{ route('admin.albums.show', $album) }}" class="btn-secondary">
+                ← Kembali
+            </a>
+        </div>
 
-        // Click to upload
-        dropZone.addEventListener('click', () => singleFile.click());
+        {{-- Overall Progress Bar --}}
+        <div id="overallProgress" class="mt-6 hidden">
+            <div class="flex justify-between text-sm text-slate-400 mb-2">
+                <span id="progressLabel">Memproses...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar-wrap">
+                <div id="progressBarFill" class="progress-bar-fill" style="width:0%"></div>
+            </div>
+        </div>
+    </div>
 
-        singleFile.addEventListener('change', (e) => {
-            selectedFiles = Array.from(e.target.files);
-            updateSubmitButton();
-            showFileInfo();
-        });
+    {{-- Per-file Progress List --}}
+    <div id="progressList" class="mb-8 hidden">
+        <h3 class="text-lg font-bold text-white mb-4">📋 Status Upload</h3>
+        <div id="progressItems"></div>
+    </div>
 
-        folderFile.addEventListener('change', (e) => {
-            selectedFiles = Array.from(e.target.files);
-            updateSubmitButton();
-            showFileInfo();
-        });
+    {{-- Uploaded Photos Grid --}}
+    <div id="photosSection" class="hidden">
+        <h3 class="text-lg font-bold text-white mb-4">✅ Foto Berhasil Diupload</h3>
+        <div id="photoGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+    </div>
 
-        function updateSubmitButton() {
-            submitBtn.disabled = selectedFiles.length === 0;
-            submitBtn.textContent = selectedFiles.length > 0 
-                ? `🚀 Upload ${selectedFiles.length} Foto` 
-                : '🚀 Upload Foto';
-        }
+</div>
 
-        function showFileInfo() {
-            const totalSize = selectedFiles.reduce((sum, file) => sum + file.size, 0);
-            const sizeMB = (totalSize / 1024 / 1024).toFixed(2);
-            dropZone.innerHTML = `
-                <div class="drop-zone-icon">✅</div>
-                <div class="drop-zone-text">
-                    <h3>${selectedFiles.length} file dipilih</h3>
-                    <p>${sizeMB} MB total</p>
-                </div>
-            `;
-        }
+{{-- face-api.js CDN --}}
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+// ════════════════════════════════════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════════════════════════════════════
+const UPLOAD_URL      = @json(route('admin.albums.store-photos', $album));
+const CSRF_TOKEN      = document.querySelector('meta[name="csrf-token"]').content;
+const MODEL_URL       = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
 
-        // Form submission
-        uploadForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+// ════════════════════════════════════════════════════════════════════════════
+// DOM REFS
+// ════════════════════════════════════════════════════════════════════════════
+const dropZone        = document.getElementById('dropZone');
+const fileInput       = document.getElementById('fileInput');
+const folderInput     = document.getElementById('folderInput');
+const priceInput      = document.getElementById('priceInput');
+const startBtn        = document.getElementById('startBtn');
+const overallProgress = document.getElementById('overallProgress');
+const progressLabel   = document.getElementById('progressLabel');
+const progressPercent = document.getElementById('progressPercent');
+const progressBarFill = document.getElementById('progressBarFill');
+const progressList    = document.getElementById('progressList');
+const progressItems   = document.getElementById('progressItems');
+const photosSection   = document.getElementById('photosSection');
+const photoGrid       = document.getElementById('photoGrid');
+const messageBox      = document.getElementById('messageBox');
 
-            if (selectedFiles.length === 0) {
-                showMessage('Pilih file terlebih dahulu', 'error');
-                return;
+let selectedFiles   = [];
+let modelsLoaded    = false;
+let isProcessing    = false;
+
+// ════════════════════════════════════════════════════════════════════════════
+// MODEL LOADING (background, lazy)
+// ════════════════════════════════════════════════════════════════════════════
+async function loadModels() {
+    if (modelsLoaded) return;
+    showMessage('⏳ Memuat model face detection…', 'info');
+    try {
+        await Promise.all([
+            faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+        ]);
+        modelsLoaded = true;
+        clearMessages();
+        showMessage('✅ Model face detection siap digunakan.', 'success');
+        setTimeout(clearMessages, 3000);
+    } catch (err) {
+        showMessage('⚠️ Gagal memuat model face detection. Foto tetap akan diupload tanpa deteksi wajah.', 'warning');
+    }
+}
+
+// Start loading models immediately on page load
+loadModels();
+
+// ════════════════════════════════════════════════════════════════════════════
+// FILE SELECTION
+// ════════════════════════════════════════════════════════════════════════════
+function handleFiles(files) {
+    selectedFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+    updateDropZoneText();
+    updateStartBtn();
+}
+
+fileInput.addEventListener('change',   e => handleFiles(e.target.files));
+folderInput.addEventListener('change', e => handleFiles(e.target.files));
+dropZone.addEventListener('click',     () => fileInput.click());
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    handleFiles(e.dataTransfer.files);
+});
+
+function updateDropZoneText() {
+    const totalMB = (selectedFiles.reduce((s, f) => s + f.size, 0) / 1048576).toFixed(1);
+    dropZone.innerHTML = `
+        <div class="text-5xl mb-4">✅</div>
+        <h3 class="text-xl font-bold text-white mb-1">${selectedFiles.length} foto dipilih</h3>
+        <p class="text-slate-400 text-sm">${totalMB} MB total &bull;
+            <button type="button" onclick="resetSelection()" class="text-purple-400 hover:underline ml-1">Ganti pilihan</button>
+        </p>
+    `;
+}
+
+function resetSelection() {
+    selectedFiles = [];
+    fileInput.value = '';
+    folderInput.value = '';
+    dropZone.innerHTML = `
+        <div class="text-5xl mb-4">☁️</div>
+        <h3 class="text-xl font-bold text-white mb-2">Drag & drop foto di sini</h3>
+        <p class="text-slate-400 text-sm mb-4">atau klik untuk memilih file</p>
+        <div class="flex gap-3 justify-center flex-wrap">
+            <label class="btn-secondary text-sm cursor-pointer">
+                📷 Pilih File
+                <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
+            </label>
+            <label class="btn-secondary text-sm cursor-pointer">
+                📂 Pilih Folder
+                <input type="file" id="folderInput" accept="image/*" webkitdirectory directory class="hidden">
+            </label>
+        </div>
+    `;
+    // Re-attach listeners on newly created inputs
+    document.getElementById('fileInput').addEventListener('change', e => handleFiles(e.target.files));
+    document.getElementById('folderInput').addEventListener('change', e => handleFiles(e.target.files));
+    updateStartBtn();
+}
+
+function updateStartBtn() {
+    startBtn.disabled = selectedFiles.length === 0 || isProcessing;
+    startBtn.textContent = selectedFiles.length > 0
+        ? `🚀 Scan & Upload ${selectedFiles.length} Foto`
+        : '🚀 Scan & Upload Foto';
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// MAIN PIPELINE: SCAN FACES → UPLOAD
+// ════════════════════════════════════════════════════════════════════════════
+startBtn.addEventListener('click', async () => {
+    if (selectedFiles.length === 0 || isProcessing) return;
+
+    isProcessing = true;
+    startBtn.disabled = true;
+    clearMessages();
+
+    // Show UI sections
+    overallProgress.classList.remove('hidden');
+    progressList.classList.remove('hidden');
+    progressItems.innerHTML = '';
+
+    // Build progress item elements
+    const itemEls = selectedFiles.map((file, idx) => {
+        const el = document.createElement('div');
+        el.className = 'progress-item';
+        el.id = `item-${idx}`;
+        el.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span class="font-medium text-sm text-slate-200 truncate max-w-xs">${file.name}</span>
+                <span class="status-badge badge-scanning" id="badge-${idx}">⏳ Antri…</span>
+            </div>
+            <div class="progress-bar-wrap mt-2">
+                <div class="progress-bar-fill" id="bar-${idx}" style="width:0%"></div>
+            </div>
+            <p class="text-xs text-slate-400 mt-1" id="msg-${idx}"></p>
+        `;
+        progressItems.appendChild(el);
+        return el;
+    });
+
+    let done = 0;
+    const total = selectedFiles.length;
+
+    function setOverall(label) {
+        const pct = Math.round((done / total) * 100);
+        progressLabel.textContent   = label;
+        progressPercent.textContent = pct + '%';
+        progressBarFill.style.width = pct + '%';
+    }
+
+    // Process each file sequentially
+    for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const itemEl = itemEls[i];
+        const badgeEl = document.getElementById(`badge-${i}`);
+        const barEl   = document.getElementById(`bar-${i}`);
+        const msgEl   = document.getElementById(`msg-${i}`);
+
+        setOverall(`Memproses ${i + 1} / ${total}: ${file.name}`);
+
+        // ── Step 1: Scan faces ───────────────────────────────────────────────
+        itemEl.classList.add('scanning');
+        badgeEl.className = 'status-badge badge-scanning';
+        badgeEl.textContent = '🔍 Scanning wajah…';
+        barEl.style.width = '20%';
+        msgEl.textContent = 'Mendeteksi wajah dalam foto…';
+
+        let descriptors = [];
+        try {
+            if (modelsLoaded) {
+                const img = await createImageBitmap(file);
+                const canvas = document.createElement('canvas');
+                canvas.width  = img.width;
+                canvas.height = img.height;
+                canvas.getContext('2d').drawImage(img, 0, 0);
+
+                const detections = await faceapi
+                    .detectAllFaces(canvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+                    .withFaceLandmarks()
+                    .withFaceDescriptors();
+
+                descriptors = detections.map(d => Array.from(d.descriptor));
+                msgEl.textContent = `${descriptors.length} wajah terdeteksi.`;
+            } else {
+                msgEl.textContent = 'Model belum siap, foto diupload tanpa data wajah.';
             }
+        } catch (scanErr) {
+            msgEl.textContent = `Scan gagal (${scanErr.message}), upload tanpa data wajah.`;
+        }
 
-            const formData = new FormData();
-            selectedFiles.forEach(file => {
-                formData.append('photos[]', file);
+        barEl.style.width = '50%';
+
+        // ── Step 2: Upload to backend ────────────────────────────────────────
+        itemEl.classList.remove('scanning');
+        itemEl.classList.add('uploading');
+        badgeEl.className = 'status-badge badge-upload';
+        badgeEl.textContent = '📤 Uploading…';
+
+        const formData = new FormData();
+        formData.append('photo', file);
+        formData.append('price', priceInput.value || 50000);
+        formData.append('face_descriptors', JSON.stringify(descriptors));
+
+        try {
+            const response = await fetch(UPLOAD_URL, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': CSRF_TOKEN },
+                body: formData,
             });
-            formData.append('price', priceInput.value);
 
-            submitBtn.disabled = true;
-            uploadProgress.style.display = 'block';
-            messageContainer.innerHTML = '';
+            const data = await response.json();
 
-            try {
-                const response = await fetch(`{{ route('admin.albums.upload', $album) }}`, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                    }
-                });
+            barEl.style.width = '100%';
 
-                const data = await response.json();
+            if (data.success) {
+                itemEl.classList.remove('uploading');
+                itemEl.classList.add('success');
+                badgeEl.className = 'status-badge badge-done';
+                badgeEl.textContent = `✅ ${data.photo.face_count} wajah`;
+                msgEl.textContent = data.message;
 
-                if (data.success) {
-                    showMessage(data.message, 'success');
-                    displayUploadedPhotos(data.photos);
-                    selectedFiles = [];
-                    updateSubmitButton();
-                    singleFile.value = '';
-                    folderFile.value = '';
-                    dropZone.innerHTML = `
-                        <div class="drop-zone-icon">📁</div>
-                        <div class="drop-zone-text">
-                            <h3>Drag dan drop foto di sini</h3>
-                            <p>atau klik untuk memilih file</p>
-                        </div>
-                    `;
-                } else {
-                    showMessage(data.message, 'error');
-                }
-
-                if (data.errors && data.errors.length > 0) {
-                    data.errors.forEach(error => {
-                        showMessage(error, 'error');
-                    });
-                }
-
-            } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-            } finally {
-                submitBtn.disabled = false;
-                uploadProgress.style.display = 'none';
+                // Add to photo grid
+                addPhotoToGrid(data.photo);
+            } else {
+                throw new Error(data.message || 'Upload gagal');
             }
-        });
-
-        function showMessage(message, type) {
-            const alertClass = type === 'success' ? 'alert-success' : (type === 'error' ? 'alert-error' : 'alert-info');
-            const alertHTML = `<div class="alert ${alertClass}">${message}</div>`;
-            messageContainer.innerHTML += alertHTML;
+        } catch (uploadErr) {
+            itemEl.classList.remove('uploading');
+            itemEl.classList.add('error');
+            badgeEl.className = 'status-badge badge-error';
+            badgeEl.textContent = '❌ Gagal';
+            msgEl.textContent = uploadErr.message;
         }
 
-        function displayUploadedPhotos(photos) {
-            uploadedPhotos.style.display = 'block';
-            photos.forEach(photo => {
-                const photoElement = document.createElement('div');
-                photoElement.className = 'photo-item';
-                photoElement.innerHTML = `
-                    <img src="{{ asset('storage') }}/${photo.filename.replace(photo.original_name, photo.filename)}" alt="Photo">
-                    <button type="button" class="photo-item-delete" data-id="${photo.id}" title="Hapus">×</button>
-                `;
-                photoGrid.appendChild(photoElement);
-            });
-        }
+        done++;
+        setOverall(done < total ? `Memproses ${done + 1} / ${total}…` : '🎉 Selesai!');
+    }
 
-        // Delete photo
-        document.addEventListener('click', async (e) => {
-            if (e.target.classList.contains('photo-item-delete')) {
-                e.preventDefault();
-                const photoId = e.target.dataset.id;
-                if (confirm('Hapus foto ini?')) {
-                    try {
-                        const response = await fetch(`/admin/photos/${photoId}`, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                            }
-                        });
-                        const data = await response.json();
-                        if (data.success) {
-                            e.target.closest('.photo-item').remove();
-                            showMessage(data.message, 'success');
-                        }
-                    } catch (error) {
-                        showMessage('Error menghapus foto', 'error');
-                    }
-                }
-            }
+    // All done
+    progressLabel.textContent   = `✅ ${done} foto diproses`;
+    progressPercent.textContent = '100%';
+    progressBarFill.style.width = '100%';
+
+    if (photoGrid.children.length > 0) {
+        photosSection.classList.remove('hidden');
+    }
+
+    isProcessing = false;
+    startBtn.disabled = false;
+    startBtn.textContent = '🚀 Upload Lebih Banyak';
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// PHOTO GRID
+// ════════════════════════════════════════════════════════════════════════════
+function addPhotoToGrid(photoData) {
+    const thumb = document.createElement('div');
+    thumb.className = 'photo-thumb';
+    thumb.innerHTML = `
+        <img src="${photoData.path}" alt="${photoData.original_name}" loading="lazy">
+        <div class="face-badge">👤 ${photoData.face_count}</div>
+        <button class="del-btn" data-id="${photoData.id}" title="Hapus foto ini">×</button>
+    `;
+    photoGrid.appendChild(thumb);
+}
+
+photoGrid.addEventListener('click', async e => {
+    const btn = e.target.closest('.del-btn');
+    if (!btn) return;
+    if (!confirm('Hapus foto ini dari album?')) return;
+
+    const photoId = btn.dataset.id;
+    try {
+        const res = await fetch(`/admin/photos/${photoId}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': CSRF_TOKEN },
         });
-    </script>
+        const data = await res.json();
+        if (data.success) {
+            btn.closest('.photo-thumb').remove();
+            showMessage('Foto berhasil dihapus.', 'success');
+        }
+    } catch {
+        showMessage('Gagal menghapus foto.', 'error');
+    }
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════════════════════════
+function showMessage(msg, type = 'info') {
+    const colors = {
+        success: 'rgba(16,185,129,.15);border-color:rgba(16,185,129,.4);color:#34d399',
+        error:   'rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);color:#f87171',
+        warning: 'rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fbbf24',
+        info:    'rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:#60a5fa',
+    };
+    const style = colors[type] || colors.info;
+    messageBox.innerHTML += `<div style="padding:12px 16px;border-radius:10px;border:1px solid;background:${style};margin-bottom:10px;font-size:.875rem;">${msg}</div>`;
+}
+
+function clearMessages() {
+    messageBox.innerHTML = '';
+}
+</script>
 </body>
 </html>

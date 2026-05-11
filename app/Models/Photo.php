@@ -14,10 +14,16 @@ class Photo extends Model
         return $this->belongsTo(Album::class);
     }
 
-    // Relasi ke Face Embedding (1 foto punya 1 data vektor wajah)
+    // Relasi ke Face Embedding (1 foto punya 1 data vektor wajah) - LEGACY
     public function faceEmbedding()
     {
         return $this->hasOne(FaceEmbedding::class);
+    }
+
+    // Relasi ke PhotoFace (1 foto bisa punya banyak wajah terdeteksi)
+    public function photoFaces()
+    {
+        return $this->hasMany(PhotoFace::class);
     }
 
     // Relasi ke Transaction Items (1 foto bisa di-beli di banyak transaction)

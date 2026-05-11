@@ -20,5 +20,9 @@
         "laravel-vite-plugin": "^1.2.0",
         "tailwindcss": "^4.2.4",
         "vite": "^6.0.11"
+    },
+    "dependencies": {
+        "canvas": "^2.11.2",
+        "face-api.js": "^0.22.2"
     }
 }

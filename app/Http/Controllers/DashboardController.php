@@ -13,31 +13,14 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         
-        // Jika user adalah buyer/customer, redirect ke albums
-        if ($user->role === 'customer') {
-            return redirect()->route('albums.index');
+        // Redirect buyers and customers to the new face-matching dashboard
+        if (in_array($user->role, ['customer', 'buyer'])) {
+            return redirect()->route('buyer.dashboard');
         }
-        
-        // Untuk admin: tampilkan semua album dari semua fotografer
+
+        // Redirect admin to admin dashboard
         if ($user->role === 'admin') {
-            $albums = Album::with('photos', 'photographer')
-                ->orderBy('created_at', 'desc')
-                ->get();
-            
-            $totalAlbums = $albums->count();
-            $totalPhotos = $albums->sum(fn($album) => $album->photos->count());
-            
-            // Total pendapatan dari semua fotografer
-            $totalRevenue = Transaction::whereIn('status', ['paid', 'completed'])
-                ->sum('total_amount');
-            
-            return view('dashboard', [
-                'albums' => $albums,
-                'totalAlbums' => $totalAlbums,
-                'totalPhotos' => $totalPhotos,
-                'totalRevenue' => $totalRevenue,
-                'isAdmin' => true,
-            ]);
+            return redirect()->route('admin.dashboard');
         }
         
         // Untuk photographer: tampilkan statistik (read-only)

@@ -11,6 +11,8 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\FaceScanController;
+use App\Http\Controllers\BuyerFaceRegistrationController;
+use App\Http\Controllers\BuyerDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
@@ -52,6 +54,27 @@ Route::middleware('auth')->group(function () {
     Route::post('/face-scan/search', [FaceScanController::class, 'search'])
         ->middleware('throttle:10,1')
         ->name('face-scan.search');
+
+    // Customer Face Search Routes
+    Route::prefix('customer')->name('customer.')->middleware('auth')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\CustomerFaceSearchController::class, 'index'])->name('dashboard');
+        Route::post('/search-albums', [App\Http\Controllers\CustomerFaceSearchController::class, 'searchAlbums'])->name('search-albums');
+        Route::get('/album/{album}', [App\Http\Controllers\CustomerFaceSearchController::class, 'viewAlbum'])->name('view-album');
+        Route::get('/album/{album}/all', [App\Http\Controllers\CustomerFaceSearchController::class, 'viewAllPhotos'])->name('view-all-photos');
+    });
+
+    // ─── Buyer Face Registration ───────────────────────────────────────────────
+    // Accessible without having a face registered (so the buyer CAN register)
+    Route::get('/buyer/register-face', [BuyerFaceRegistrationController::class, 'index'])
+        ->name('buyer.register-face');
+    Route::post('/buyer/register-face', [BuyerFaceRegistrationController::class, 'store'])
+        ->name('buyer.register-face.store');
+
+    // ─── Buyer Dashboard (Face Matcher) ────────────────────────────────────────
+    // Requires face to be registered first (buyer-face middleware)
+    Route::get('/buyer/dashboard', [BuyerDashboardController::class, 'index'])
+        ->middleware('buyer-face')
+        ->name('buyer.dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

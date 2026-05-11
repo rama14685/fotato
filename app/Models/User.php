@@ -75,10 +75,18 @@ class User extends Authenticatable
     }
 
     /**
-     * Relationship to UserFaceEmbedding (hasOne)
+     * Relationship to UserFaceEmbedding (hasOne) - LEGACY
      */
     public function faceEmbedding()
     {
         return $this->hasOne(UserFaceEmbedding::class, 'id', 'face_embedding_id');
+    }
+
+    /**
+     * Relationship to UserFace (new table, plain JSON descriptor)
+     */
+    public function userFace()
+    {
+        return $this->hasOne(UserFace::class);
     }
 }
