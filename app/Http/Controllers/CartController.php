@@ -2,54 +2,67 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Photo;
+use App\Models\TransactionItem;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    // Menampilkan cart
     public function index()
     {
         $cart = session()->get('cart', []);
+        $cartItems = [];
         $total = 0;
         
-        foreach ($cart as $item) {
-            $total += $item['price'] * $item['quantity'];
+        foreach ($cart as $photoId => $item) {
+            $photo = Photo::with(['album', 'album.photographer'])->find($photoId);
+            if ($photo) {
+                $isPurchased = $this->isPhotoPurchased($photoId);
+                $cartItems[] = [
+                    'photo' => $photo,
+                    'quantity' => $item['quantity'],
+                    'is_purchased' => $isPurchased,
+                ];
+                if (!$isPurchased) {
+                    $total += $photo->price * $item['quantity'];
+                }
+            }
         }
 
         return view('cart.index', [
-            'cartItems' => $cart,
+            'cartItems' => $cartItems,
             'totalPrice' => $total,
         ]);
     }
 
-    // Tambah foto ke cart
     public function add(Request $request)
     {
+        $request->validate([
+            'photo_id' => 'required|exists:photos,id',
+        ]);
+
+        $photoId = $request->photo_id;
+        
+        // Cek apakah foto sudah dibeli
+        if ($this->isPhotoPurchased($photoId)) {
+            return redirect()->back()->with('error', 'Anda sudah membeli foto ini!');
+        }
+
         $cart = session()->get('cart', []);
         
-        $photoId = $request->photo_id;
-        $quantity = $request->quantity ?? 1;
-
-        // Cek apakah foto sudah ada di cart
         if (isset($cart[$photoId])) {
-            $cart[$photoId]['quantity'] += $quantity;
-        } else {
-            $cart[$photoId] = [
-                'photo_id' => $photoId,
-                'title' => $request->title,
-                'price' => $request->price,
-                'photographer' => $request->photographer,
-                'image' => $request->image,
-                'quantity' => $quantity,
-            ];
+            return redirect()->back()->with('info', 'Foto sudah ada di keranjang!');
         }
+
+        $cart[$photoId] = [
+            'quantity' => 1,
+        ];
 
         session()->put('cart', $cart);
 
         return redirect()->back()->with('success', 'Foto ditambahkan ke keranjang!');
     }
 
-    // Update quantity item di cart
     public function update(Request $request)
     {
         $cart = session()->get('cart', []);
@@ -70,7 +83,6 @@ class CartController extends Controller
         return redirect()->back()->with('success', 'Keranjang diperbarui!');
     }
 
-    // Hapus item dari cart
     public function remove(Request $request)
     {
         $cart = session()->get('cart', []);
@@ -82,11 +94,22 @@ class CartController extends Controller
         return redirect()->back()->with('success', 'Foto dihapus dari keranjang!');
     }
 
-    // Clear cart
     public function clear()
     {
         session()->forget('cart');
 
         return redirect()->back()->with('success', 'Keranjang dikosongkan!');
+    }
+
+    private function isPhotoPurchased($photoId)
+    {
+        if (!auth()->check()) {
+            return false;
+        }
+
+        return TransactionItem::whereHas('transaction', function($q) {
+            $q->where('buyer_id', auth()->id())
+              ->where('status', 'completed');
+        })->where('photo_id', $photoId)->exists();
     }
 }

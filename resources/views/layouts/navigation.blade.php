@@ -15,6 +15,20 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('albums.index')" :active="request()->routeIs('albums.*')">
+                        📁 {{ __('Album') }}
+                    </x-nav-link>
+                    @auth
+                        <x-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.*')" class="relative">
+                            🛒 {{ __('Keranjang') }}
+                            @php
+                                $cartCount = count(session()->get('cart', []));
+                            @endphp
+                            @if($cartCount > 0)
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{{ $cartCount }}</span>
+                            @endif
+                        </x-nav-link>
+                    @endauth
                 </div>
             </div>
 

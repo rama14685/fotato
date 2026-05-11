@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AlbumController;
 use App\Http\Controllers\Admin\PhotoController;
 use App\Http\Controllers\Admin\RevenueController;
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\EventController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -33,4 +34,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Audit Logs
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('audit-logs/{auditLog}', [AuditLogController::class, 'show'])->name('audit-logs.show');
+    
+    // Events (Upcoming)
+    Route::resource('events', EventController::class);
 });

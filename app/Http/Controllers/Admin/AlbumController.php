@@ -80,6 +80,14 @@ class AlbumController extends Controller
     {
         $validated = $request->validated();
 
+        // Handle thumbnail upload
+        if ($request->hasFile('thumbnail')) {
+            $file = $request->file('thumbnail');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('albums/thumbnails', $filename, 'public');
+            $validated['thumbnail_path'] = $path;
+        }
+
         $album = Album::create($validated);
 
         AdminAuditLog::logAction(

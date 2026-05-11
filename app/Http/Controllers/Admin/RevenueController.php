@@ -41,8 +41,8 @@ class RevenueController extends Controller
 
         // Revenue by album
         $revenueByAlbum = Album::with('photographer')
-            ->withSum('photos.transactionItems as revenue', 'transactions.total_amount')
-            ->orderBy('revenue', 'desc')
+            ->withCount('photos')
+            ->orderBy('photos_count', 'desc')
             ->take(10)
             ->get();
 

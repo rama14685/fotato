@@ -13,9 +13,9 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         
-        // Jika user adalah buyer/customer, redirect ke catalog
+        // Jika user adalah buyer/customer, redirect ke albums
         if ($user->role === 'customer') {
-            return redirect()->route('catalog.index');
+            return redirect()->route('albums.index');
         }
         
         // Untuk admin: tampilkan semua album dari semua fotografer

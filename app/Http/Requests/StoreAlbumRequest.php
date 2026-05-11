@@ -26,6 +26,7 @@ class StoreAlbumRequest extends FormRequest
             'title' => 'required|string|max:255',
             'location' => 'required|string|max:255',
             'event_date' => 'required|date',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
         ];
     }
 

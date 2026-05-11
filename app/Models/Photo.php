@@ -25,4 +25,31 @@ class Photo extends Model
     {
         return $this->hasMany(TransactionItem::class);
     }
+
+    // Helper: Cek apakah foto sudah dibeli oleh user tertentu
+    public function isPurchasedBy($userId)
+    {
+        if (!$userId) {
+            return false;
+        }
+
+        return $this->transactionItems()
+            ->whereHas('transaction', function($q) use ($userId) {
+                $q->where('buyer_id', $userId)
+                  ->where('status', 'completed');
+            })
+            ->exists();
+    }
+
+    // Helper: Get display path (watermark jika belum dibeli, original jika sudah dibeli)
+    public function getDisplayPath($userId = null)
+    {
+        // Jika sudah dibeli, tampilkan original (tanpa watermark)
+        if ($userId && $this->isPurchasedBy($userId)) {
+            return $this->original_path;
+        }
+
+        // Jika belum dibeli, tampilkan watermark (atau original jika watermark belum ada)
+        return $this->watermark_path ?: $this->original_path;
+    }
 }

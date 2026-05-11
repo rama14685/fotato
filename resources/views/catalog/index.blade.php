@@ -71,8 +71,10 @@
                         <a href="{{ route('catalog.show', $photo) }}" class="bg-white/5 backdrop-blur-xl border border-white/10 overflow-hidden rounded-2xl shadow-lg hover:bg-white/10 transition group">
                             <!-- Photo Preview -->
                             <div class="relative h-56 bg-gray-900 overflow-hidden flex items-center justify-center">
-                                @if (file_exists(public_path('storage/' . $photo->watermark_path)))
+                                @if($photo->watermark_path && file_exists(public_path('storage/' . $photo->watermark_path)))
                                     <img src="{{ asset('storage/' . $photo->watermark_path) }}" alt="{{ $photo->album->title }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+                                @elseif($photo->original_path && file_exists(public_path('storage/' . $photo->original_path)))
+                                    <img src="{{ asset('storage/' . $photo->original_path) }}" alt="{{ $photo->album->title }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
                                 @else
                                     <div class="text-gray-500 text-center">
                                         <div class="text-4xl mb-2">🖼️</div>
@@ -95,6 +97,13 @@
 
                                 <div class="flex items-center justify-between pt-3 border-t border-white/10">
                                     <span class="text-2xl font-bold text-green-400">Rp {{ number_format($photo->price, 0, ',', '.') }}</span>
+                                    <form method="POST" action="{{ route('cart.add') }}" class="inline" onclick="event.stopPropagation();">
+                                        @csrf
+                                        <input type="hidden" name="photo_id" value="{{ $photo->id }}">
+                                        <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition">
+                                            🛍️ Keranjang
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </a>

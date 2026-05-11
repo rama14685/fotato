@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\CatalogController;
@@ -12,30 +13,21 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\FaceScanController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('landing');
-});
+Route::get('/', [LandingController::class, 'index'])->name('landing');
 
-// Public routes untuk catalog
-Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
+// Public routes untuk albums (pembeli pilih album dulu)
+Route::get('/albums', [App\Http\Controllers\AlbumCatalogController::class, 'index'])->name('albums.index');
+Route::get('/albums/{album}', [App\Http\Controllers\AlbumCatalogController::class, 'show'])->name('albums.show');
+
+// Old catalog route (deprecated, redirect ke albums)
+Route::get('/catalog', function() {
+    return redirect()->route('albums.index');
+})->name('catalog.index');
 Route::get('/catalog/{photo}', [CatalogController::class, 'show'])->name('catalog.show');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    // Route untuk Album (Admin Only)
-    Route::middleware('admin')->group(function () {
-        Route::get('/albums/create', [AlbumController::class, 'create'])->name('albums.create');
-        Route::post('/albums', [AlbumController::class, 'store'])->name('albums.store');
-        
-        // Route untuk Foto (Admin Only)
-        Route::get('/albums/{album}/photos/create', [PhotoController::class, 'create'])->name('photos.create');
-        Route::post('/albums/{album}/photos', [PhotoController::class, 'store'])->name('photos.store');
-    });
-    
-    // Route untuk melihat album (Admin dan Photographer)
-    Route::get('/albums/{album}', [AlbumController::class, 'show'])->name('albums.show');
-
     // Route untuk Shopping Cart (Buyer)
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');

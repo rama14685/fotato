@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Album extends Model
 {
     use HasFactory;
-    protected $fillable = ['photographer_id', 'title', 'location', 'event_date'];
+    protected $fillable = ['photographer_id', 'title', 'location', 'event_date', 'thumbnail_path'];
 
     protected $casts = [
         'event_date' => 'datetime',
