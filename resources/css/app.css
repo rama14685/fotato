@@ -1,1 +1,184 @@
 @import "tailwindcss";
+
+/* Montserrat Local @font-face (Variable Font) - Using Relative Paths for Vite build-time resolution */
+@font-face {
+    font-family: "Montserrat";
+    src: url("../../public/Montserrat/Montserrat-VariableFont_wght.ttf")
+        format("truetype");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("../../public/Montserrat/Montserrat-Italic-VariableFont_wght.ttf")
+        format("truetype");
+    font-weight: 100 900;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* Montserrat Alternates Local @font-face - Using Relative Paths for Vite build-time resolution */
+@font-face {
+    font-family: "Montserrat Alternates";
+    src: url("../../public/Montserrat_Alternates/MontserratAlternates-Regular.ttf")
+        format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Montserrat Alternates";
+    src: url("../../public/Montserrat_Alternates/MontserratAlternates-Medium.ttf")
+        format("truetype");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Montserrat Alternates";
+    src: url("../../public/Montserrat_Alternates/MontserratAlternates-SemiBold.ttf")
+        format("truetype");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Montserrat Alternates";
+    src: url("../../public/Montserrat_Alternates/MontserratAlternates-Bold.ttf")
+        format("truetype");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Montserrat Alternates";
+    src: url("../../public/Montserrat_Alternates/MontserratAlternates-ExtraBold.ttf")
+        format("truetype");
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Montserrat Alternates";
+    src: url("../../public/Montserrat_Alternates/MontserratAlternates-Black.ttf")
+        format("truetype");
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@theme {
+    --font-sans: "Montserrat", sans-serif;
+    --font-display: "Montserrat Alternates", sans-serif;
+
+    /* Custom palette colors matching the user's selection */
+    --color-brand-bg: #0d061a;
+    --color-brand-purple: #a855f7;
+    --color-brand-purple-dark: #6b21a8;
+    --color-brand-purple-light: #c084fc;
+}
+
+/* Base style resets and overrides */
+body {
+    font-family: var(--font-sans);
+    background-color: var(--color-brand-bg);
+    color: #ffffff;
+    overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-display {
+    font-family: var(--font-display);
+}
+
+.font-sans {
+    font-family: var(--font-sans);
+}
+
+/* Custom Purple Glassmorphism Styles */
+.glass-effect {
+    background: rgba(168, 85, 247, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(168, 85, 247, 0.1);
+}
+
+.glass-effect-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-effect-hover:hover {
+    background: rgba(168, 85, 247, 0.08);
+    border-color: rgba(168, 85, 247, 0.35);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(168, 85, 247, 0.15);
+}
+
+/* Custom Animations */
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.animate-marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee 20s linear infinite;
+}
+
+.animate-marquee:hover {
+    animation-play-state: paused;
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-12px) rotate(1deg);
+    }
+}
+
+.animate-float {
+    animation: float 6s ease-in-out infinite;
+}
+
+/* Purple Glow Background Spots */
+.glow-spot {
+    position: absolute;
+    width: 450px;
+    height: 450px;
+    background: radial-gradient(
+        circle,
+        rgba(168, 85, 247, 0.15) 0%,
+        rgba(168, 85, 247, 0) 70%
+    );
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* Custom Scrollbar for Testimonial Scroll */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

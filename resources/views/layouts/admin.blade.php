@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Fotlist') }} - Admin</title>
+        <title>{{ config('app.name', 'fotlist') }} - Admin</title>
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         
@@ -166,7 +166,7 @@
                             <!-- Logo -->
                             <div class="shrink-0 flex items-center">
                                 <a href="{{ route('admin.dashboard') }}" class="text-2xl font-bold gradient-text">
-                                    📸 Fotlist Admin
+                                    📸 fotlist Admin
                                 </a>
                             </div>
 
