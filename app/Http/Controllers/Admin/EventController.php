@@ -7,6 +7,7 @@ use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
@@ -29,10 +30,14 @@ class EventController extends Controller
             'location' => 'nullable|string|max:255',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
-            'is_public' => 'sometimes|boolean',
+            'image' => 'nullable|image|max:2048',
         ]);
 
-        $data['is_public'] = isset($data['is_public']) ? (bool)$data['is_public'] : true;
+        $data['is_public'] = $request->has('is_public');
+
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('events', 'public');
+        }
 
         $event = Event::create($data);
 
@@ -57,10 +62,17 @@ class EventController extends Controller
             'location' => 'nullable|string|max:255',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
-            'is_public' => 'sometimes|boolean',
+            'image' => 'nullable|image|max:2048',
         ]);
 
-        $data['is_public'] = isset($data['is_public']) ? (bool)$data['is_public'] : true;
+        $data['is_public'] = $request->has('is_public');
+
+        if ($request->hasFile('image')) {
+            if ($event->image_path) {
+                Storage::disk('public')->delete($event->image_path);
+            }
+            $data['image_path'] = $request->file('image')->store('events', 'public');
+        }
 
         $event->update($data);
 
@@ -69,6 +81,9 @@ class EventController extends Controller
 
     public function destroy(Event $event): RedirectResponse
     {
+        if ($event->image_path) {
+            Storage::disk('public')->delete($event->image_path);
+        }
         $event->delete();
         return redirect()->route('admin.events.index')->with('success', 'Event dihapus.');
     }

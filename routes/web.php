@@ -16,6 +16,7 @@ use App\Http\Controllers\BuyerDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
+Route::get('/events', [LandingController::class, 'events'])->name('events.index');
 
 // Public routes untuk albums (pembeli pilih album dulu)
 Route::get('/albums', [App\Http\Controllers\AlbumCatalogController::class, 'index'])->name('albums.index');

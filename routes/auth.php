@@ -18,14 +18,14 @@ Route::middleware('guest')->group(function () {
         ->name('register');
     
     Route::post('register/step-one', [MultiStepRegistrationController::class, 'storeStepOne'])
-        ->middleware('throttle:5,60')
+        ->middleware('throttle:30,60')
         ->name('register.step-one');
     
     Route::get('register/step-two', [MultiStepRegistrationController::class, 'showStepTwo'])
         ->name('register.step-two');
     
     Route::post('register/step-two', [MultiStepRegistrationController::class, 'storeStepTwo'])
-        ->middleware('throttle:5,60')
+        ->middleware('throttle:30,60')
         ->name('register.step-two.store');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])

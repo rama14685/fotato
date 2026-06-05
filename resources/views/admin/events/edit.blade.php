@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-2xl font-bold mb-4">Edit Event</h1>
 
-    <form method="POST" action="{{ route('admin.events.update', $event) }}">
+    <form method="POST" action="{{ route('admin.events.update', $event) }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <div class="grid grid-cols-1 gap-4 max-w-2xl">
@@ -30,8 +30,18 @@
                     <input type="datetime-local" name="end_date" value="{{ old('end_date', optional($event->end_date)->format('Y-m-d\TH:i')) }}" class="w-full border p-2 rounded">
                 </div>
             </div>
+            <div>
+                <label class="block text-sm font-medium">Gambar Event (Poster)</label>
+                @if($event->image_path)
+                    <div class="mb-2">
+                        <img src="{{ asset('storage/' . $event->image_path) }}" alt="{{ $event->name }}" class="h-32 object-cover rounded border">
+                    </div>
+                @endif
+                <input type="file" name="image" class="w-full border p-2 rounded text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <span class="text-xs text-gray-500">Format gambar (jpg, jpeg, png), maks 2MB. Kosongkan jika tidak ingin mengubah.</span>
+            </div>
             <div class="flex items-center gap-4">
-                <label class="flex items-center gap-2"><input type="checkbox" name="is_public" {{ $event->is_public ? 'checked' : '' }}> Publik</label>
+                <label class="flex items-center gap-2"><input type="checkbox" name="is_public" value="1" {{ $event->is_public ? 'checked' : '' }}> Publik</label>
             </div>
             <div class="flex gap-2">
                 <button class="bg-blue-600 text-white px-4 py-2 rounded">Simpan</button>

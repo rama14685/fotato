@@ -18,7 +18,7 @@
             <div class="hidden md:flex gap-8 items-center">
                 <a href="#" class="text-white hover:text-purple-300 transition-colors text-sm font-medium">Home</a>
                 <a href="{{ route('albums.index') }}" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">Gallery</a>
-                <a href="#events" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">Upcoming Concert</a>
+                <a href="{{ route('events.index') }}" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">Upcoming Concert</a>
                 <a href="#usage" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">FAQ</a>
             </div>
 
@@ -53,7 +53,7 @@
                 <a href="{{ route('register') }}" class="px-8 py-3.5 rounded-full bg-[#FFE600] text-black font-display font-bold transition-all hover:scale-105 hover:bg-[#fff04d] text-center text-sm md:text-base shadow-lg shadow-[#FFE600]/25">
                     Cari Foto Sekarang
                 </a>
-                <a href="#events" class="px-8 py-3.5 rounded-full border border-purple-500/40 bg-black/40 hover:bg-[#a855f7]/20 text-white font-display font-semibold transition-all hover:scale-105 text-center text-sm md:text-base">
+                <a href="{{ route('events.index') }}" class="px-8 py-3.5 rounded-full border border-purple-500/40 bg-black/40 hover:bg-[#a855f7]/20 text-white font-display font-semibold transition-all hover:scale-105 text-center text-sm md:text-base">
                     Lihat Event
                 </a>
             </div>
@@ -352,7 +352,7 @@
     </section>
 
     <!-- Testimonial Section (Apa Kata Mereka?) -->
-    <section class="py-24 px-6 bg-[#0d061a] overflow-hidden">
+    <section class="py-24 px-6 bg-[#0d061a]" id="testimonials">
         <div class="container mx-auto max-w-6xl relative">
             <h2 class="text-3xl md:text-5xl font-bold font-display text-center mb-4 bg-gradient-to-b from-white to-purple-300 bg-clip-text text-transparent">Apa Kata Mereka?</h2>
             <p class="text-purple-200/60 text-center font-sans max-w-2xl mx-auto mb-16 leading-relaxed text-sm">
@@ -416,7 +416,7 @@
                         </div>
                     </div>
                 </div>
-
+ 
                 <!-- Testimonial 4 -->
                 <div class="glass-effect p-8 rounded-2xl w-[300px] md:w-[360px] shrink-0 snap-start flex flex-col justify-between">
                     <p class="text-purple-100 font-sans italic leading-relaxed mb-8 text-xs">
@@ -432,39 +432,13 @@
                     </div>
                 </div>
             </div>
-
+ 
             <!-- Indicator Dots -->
             <div id="testimonial-dots" class="flex justify-center gap-2 mt-8">
                 <button class="w-2.5 h-2.5 rounded-full bg-[#a855f7] transition-all duration-300" data-index="0"></button>
                 <button class="w-2.5 h-2.5 rounded-full bg-white/20 transition-all duration-300" data-index="1"></button>
                 <button class="w-2.5 h-2.5 rounded-full bg-white/20 transition-all duration-300" data-index="2"></button>
                 <button class="w-2.5 h-2.5 rounded-full bg-white/20 transition-all duration-300" data-index="3"></button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Event Mendatang -->
-    <section class="py-24 px-6 bg-[#0d061a]" id="events">
-        <div class="container mx-auto max-w-4xl">
-            <h2 class="text-3xl md:text-5xl font-bold font-display text-center mb-16 bg-gradient-to-b from-white to-purple-300 bg-clip-text text-transparent">Event Mendatang</h2>
-            <div class="space-y-4">
-                @forelse($events as $ev)
-                    <div class="glass-effect p-6 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-purple-500/30 transition-all">
-                        <div>
-                            <h3 class="text-xl font-bold font-display text-white mb-1">{{ $ev->name }}</h3>
-                            <p class="text-purple-200/50 text-sm font-sans flex items-center gap-1.5">
-                                📍 {{ $ev->location }} &nbsp;•&nbsp; 📅 {{ optional($ev->start_date)->format('d M Y H:i') }}
-                            </p>
-                        </div>
-                        <a href="{{ route('albums.index') }}" class="px-5 py-2.5 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-[#a855f7] text-purple-200 hover:text-white font-display font-semibold transition-all shrink-0 text-sm">
-                            Lihat Detail
-                        </a>
-                    </div>
-                @empty
-                    <div class="glass-effect p-8 rounded-2xl text-center">
-                        <p class="text-purple-200/50 text-sm">Belum ada event mendatang.</p>
-                    </div>
-                @endforelse
             </div>
         </div>
     </section>
