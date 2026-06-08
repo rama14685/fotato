@@ -57,7 +57,7 @@
 
                                 <div class="flex-1 text-left">
                                     <h4 class="text-white font-bold text-sm mb-2">{{ $item->photo->album->title }}</h4>
-                                    <p class="text-gray-400 text-xs mb-3">👤 {{ $item->photo->album->photographer->name }}</p>
+                                    <p class="text-gray-400 text-xs mb-3">👤 {{ $item->photo->album->photographer?->name ?? 'Admin' }}</p>
                                     <a href="{{ route('purchase.download', $item) }}" class="inline-block px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-semibold rounded transition">
                                         📥 Download
                                     </a>

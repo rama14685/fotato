@@ -17,10 +17,21 @@
 
                         <!-- Payment Methods -->
                         <div class="space-y-4 mb-8">
+                            <!-- QRIS -->
+                            <div class="p-4 border-2 border-purple-500 rounded-lg cursor-pointer hover:border-purple-500 transition payment-method" data-method="qris">
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" name="payment_method" value="qris" class="w-5 h-5" checked>
+                                    <div>
+                                        <h4 class="text-white font-bold">QRIS</h4>
+                                        <p class="text-gray-400 text-sm">Scan barcode QRIS untuk bayar instan</p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Transfer Bank -->
                             <div class="p-4 border-2 border-white/20 rounded-lg cursor-pointer hover:border-purple-500 transition payment-method" data-method="bank">
                                 <div class="flex items-center gap-3">
-                                    <input type="radio" name="payment_method" value="bank" class="w-5 h-5" checked>
+                                    <input type="radio" name="payment_method" value="bank" class="w-5 h-5">
                                     <div>
                                         <h4 class="text-white font-bold">Transfer Bank</h4>
                                         <p class="text-gray-400 text-sm">Transfer ke rekening kami</p>
@@ -33,7 +44,7 @@
                                 <div class="flex items-center gap-3">
                                     <input type="radio" name="payment_method" value="wallet" class="w-5 h-5">
                                     <div>
-                                        <h4 class="text-white font-bold">E-Wallet (GCash, PayMaya)</h4>
+                                        <h4 class="text-white font-bold">E-Wallet</h4>
                                         <p class="text-gray-400 text-sm">Pembayaran instan via e-wallet</p>
                                     </div>
                                 </div>
@@ -51,13 +62,20 @@
                             </div>
                         </div>
 
+                        <!-- QRIS Container -->
+                        <div id="qrisContainer" class="mt-6 p-6 bg-white/5 border border-white/10 rounded-2xl text-center">
+                            <h4 class="text-white font-bold mb-4">Scan QRIS untuk Pembayaran</h4>
+                            <img src="{{ asset('images/qris.png') }}" alt="QRIS Barcode" class="mx-auto max-w-xs rounded-xl shadow-lg mb-4">
+                            <p class="text-gray-400 text-xs">Pindai kode QR di atas menggunakan aplikasi e-wallet atau mobile banking Anda.</p>
+                        </div>
+
                         <!-- Payment Gateway Form -->
-                        <form action="{{ route('payment.process') }}" method="POST" id="paymentForm">
+                        <form action="{{ route('payment.process', $transaction) }}" method="POST" id="paymentForm">
                             @csrf
                             <input type="hidden" name="transaction_id" value="{{ $transaction->id }}">
-                            <input type="hidden" name="payment_method" value="bank">
+                            <input type="hidden" name="payment_method" value="qris">
 
-                            <button type="submit" class="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-lg shadow-lg transition transform hover:scale-105">
+                            <button type="submit" class="w-full mt-6 px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-lg shadow-lg transition transform hover:scale-105">
                                 💳 Proses Pembayaran
                             </button>
                         </form>
@@ -106,9 +124,27 @@
     <script>
         document.querySelectorAll('.payment-method').forEach(method => {
             method.addEventListener('click', function() {
+                // Reset active borders
+                document.querySelectorAll('.payment-method').forEach(m => {
+                    m.classList.remove('border-purple-500');
+                    m.classList.add('border-white/20');
+                });
+                
+                // Add active border to selected
+                this.classList.remove('border-white/20');
+                this.classList.add('border-purple-500');
+
                 const radio = this.querySelector('input[type="radio"]');
                 radio.checked = true;
                 document.getElementById('paymentForm').elements['payment_method'].value = radio.value;
+
+                // Toggle QRIS container
+                const qrisContainer = document.getElementById('qrisContainer');
+                if (radio.value === 'qris') {
+                    qrisContainer.classList.remove('hidden');
+                } else {
+                    qrisContainer.classList.add('hidden');
+                }
             });
         });
     </script>

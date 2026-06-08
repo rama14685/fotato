@@ -10,7 +10,9 @@ class AlbumCatalogController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Album::with(['photographer'])->withCount('photos');
+        $query = Album::where('created_at', '>=', now()->subMonth())
+            ->with(['photographer'])
+            ->withCount('photos');
 
         // Search berdasarkan location
         if ($request->filled('location')) {
@@ -48,6 +50,10 @@ class AlbumCatalogController extends Controller
 
     public function show(Album $album)
     {
+        if ($album->created_at < now()->subMonth()) {
+            abort(404, 'Album ini sudah kedaluwarsa.');
+        }
+
         $album->load(['photographer', 'photos']);
         
         return view('albums.show', compact('album'));

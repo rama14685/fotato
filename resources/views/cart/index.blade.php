@@ -49,7 +49,7 @@
                                     <!-- Photo Info -->
                                     <div class="flex-1">
                                         <h3 class="text-lg font-bold text-white mb-1">{{ $item['photo']->album->title }}</h3>
-                                        <p class="text-gray-400 text-sm mb-2">oleh {{ $item['photo']->album->photographer->name }}</p>
+                                        <p class="text-gray-400 text-sm mb-2">oleh {{ $item['photo']->album->photographer?->name ?? 'Admin' }}</p>
                                         
                                         @if($item['photo']->album->location)
                                             <p class="text-gray-400 text-xs mb-3 flex items-center gap-1">

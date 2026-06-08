@@ -47,9 +47,10 @@ class RevenueController extends Controller
             ->get();
 
         // Sales statistics
-        $totalPhotosSold = (clone $query)
-            ->withSum('items', 'quantity')
-            ->sum('items_sum_quantity');
+        $totalPhotosSold = \App\Models\TransactionItem::whereHas('transaction', function ($q) use ($startDate, $endDate) {
+            $q->where('status', 'completed')
+              ->whereBetween('created_at', [$startDate, $endDate]);
+        })->sum('quantity');
         
         $totalTransactions = (clone $query)->count();
         $averagePhotoPrice = $totalPhotosSold > 0 ? $totalRevenue / $totalPhotosSold : 0;

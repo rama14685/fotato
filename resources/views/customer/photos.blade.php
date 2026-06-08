@@ -44,7 +44,7 @@
             <div class="text-gray-300">
                 <p>📍 {{ $album->location }}</p>
                 <p>📅 {{ \Carbon\Carbon::parse($album->event_date)->format('d F Y') }}</p>
-                <p>👤 Fotografer: {{ $album->photographer->name }}</p>
+                <p>👤 Fotografer: {{ $album->photographer?->name ?? 'Admin' }}</p>
             </div>
         </div>
 

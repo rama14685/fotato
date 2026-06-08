@@ -13,9 +13,9 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         
-        // Redirect buyers and customers to the new face-matching dashboard
+        // Redirect buyers and customers to the face-registration page
         if (in_array($user->role, ['customer', 'buyer'])) {
-            return redirect()->route('buyer.dashboard');
+            return redirect()->route('buyer.register-face');
         }
 
         // Redirect admin to admin dashboard

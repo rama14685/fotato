@@ -53,7 +53,7 @@ class CustomerFaceSearchController extends Controller
         }
 
         // Build query
-        $query = Album::with('photographer');
+        $query = Album::where('created_at', '>=', now()->subMonth())->with('photographer');
 
         if ($request->event_name) {
             $query->where('title', 'like', '%' . $request->event_name . '%');
@@ -89,6 +89,10 @@ class CustomerFaceSearchController extends Controller
 
         // Get album
         $album = Album::with('photographer')->findOrFail($albumId);
+
+        if ($album->created_at < now()->subMonth()) {
+            abort(404, 'Album ini sudah kedaluwarsa.');
+        }
 
         // Check if customer has face embedding
         if (!$user->faceEmbedding) {
@@ -180,6 +184,10 @@ class CustomerFaceSearchController extends Controller
     public function viewAllPhotos($albumId)
     {
         $album = Album::with('photographer')->findOrFail($albumId);
+
+        if ($album->created_at < now()->subMonth()) {
+            abort(404, 'Album ini sudah kedaluwarsa.');
+        }
         $photos = Photo::where('album_id', $albumId)->paginate(25);
 
         return view('customer.photos-all', [

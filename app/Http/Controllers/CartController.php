@@ -51,6 +51,9 @@ class CartController extends Controller
         $cart = session()->get('cart', []);
         
         if (isset($cart[$photoId])) {
+            if ($request->has('buy_now') && $request->buy_now) {
+                return redirect()->route('checkout.index');
+            }
             return redirect()->back()->with('info', 'Foto sudah ada di keranjang!');
         }
 
@@ -59,6 +62,10 @@ class CartController extends Controller
         ];
 
         session()->put('cart', $cart);
+
+        if ($request->has('buy_now') && $request->buy_now) {
+            return redirect()->route('checkout.index');
+        }
 
         return redirect()->back()->with('success', 'Foto ditambahkan ke keranjang!');
     }

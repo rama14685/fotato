@@ -22,9 +22,86 @@ class BuyerFaceRegistrationController extends Controller
             return redirect()->route('dashboard');
         }
 
-        $hasFace = $user->userFace !== null;
+        $userFace = $user->userFace;
+        $hasFace = $userFace !== null;
+        $groupedByAlbum = collect();
+        $totalMatched = 0;
+        $purchasedPhotoIds = [];
 
-        return view('buyer.register-face', compact('hasFace'));
+        if ($hasFace && !empty($userFace->face_descriptor)) {
+            $userDescriptor = $userFace->face_descriptor;
+            if (count($userDescriptor) === 128) {
+                try {
+                    // Load ALL photo_faces rows with their photo + album relationships
+                    $allPhotoFaces = \App\Models\PhotoFace::whereHas('photo.album', function ($q) {
+                        $q->where('created_at', '>=', now()->subMonth());
+                    })->with(['photo.album'])->get();
+
+                    $matchedPhotos = collect();
+
+                    foreach ($allPhotoFaces as $photoFace) {
+                        if (empty($photoFace->face_descriptor)) {
+                            continue;
+                        }
+
+                        $distance = $this->euclideanDistance($userDescriptor, $photoFace->face_descriptor);
+
+                        if ($distance < 0.5) {
+                            $photo = $photoFace->photo;
+                            if (!$photo || $matchedPhotos->contains('id', $photo->id)) {
+                                continue;
+                            }
+
+                            $photo->match_distance = round($distance, 4);
+                            $photo->match_score    = round((1 - $distance) * 100, 1);
+                            $matchedPhotos->push($photo);
+                        }
+                    }
+
+                    $matchedPhotos = $matchedPhotos->sortBy('match_distance')->values();
+                    $totalMatched = $matchedPhotos->count();
+
+                    $purchasedPhotoIds = \App\Models\TransactionItem::whereIn('photo_id', $matchedPhotos->pluck('id'))
+                        ->whereHas('transaction', function ($q) use ($user) {
+                            $q->where('buyer_id', $user->id)
+                              ->whereIn('status', ['paid', 'completed']);
+                        })->pluck('photo_id')->toArray();
+
+                    $groupedByAlbum = $matchedPhotos->groupBy('album_id')->map(function ($photos) {
+                        return [
+                            'album'  => $photos->first()->album,
+                            'photos' => $photos->values(),
+                        ];
+                    })->values();
+
+                } catch (\Exception $e) {
+                    Log::error('Face registration match error', [
+                        'user_id' => $user->id,
+                        'error'   => $e->getMessage()
+                    ]);
+                }
+            }
+        }
+
+        return view('buyer.register-face', compact('hasFace', 'groupedByAlbum', 'totalMatched', 'purchasedPhotoIds'));
+    }
+
+    /**
+     * Calculate Euclidean distance between two 128-dimensional vectors.
+     */
+    private function euclideanDistance(array $a, array $b): float
+    {
+        if (count($a) !== count($b)) {
+            throw new \InvalidArgumentException('Vectors must have the same dimension.');
+        }
+
+        $sum = 0.0;
+        for ($i = 0; $i < count($a); $i++) {
+            $diff  = $a[$i] - $b[$i];
+            $sum  += $diff * $diff;
+        }
+
+        return sqrt($sum);
     }
 
     /**
@@ -57,7 +134,7 @@ class BuyerFaceRegistrationController extends Controller
             return response()->json([
                 'success'  => true,
                 'message'  => 'Wajah berhasil didaftarkan!',
-                'redirect' => route('buyer.dashboard'),
+                'redirect' => route('buyer.register-face'),
             ]);
 
         } catch (\Exception $e) {

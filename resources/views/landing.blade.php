@@ -20,6 +20,13 @@
                 <a href="{{ route('albums.index') }}" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">Gallery</a>
                 <a href="{{ route('events.index') }}" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">Upcoming Concert</a>
                 <a href="#usage" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">FAQ</a>
+                @auth
+                    @if(in_array(Auth::user()->role, ['buyer', 'customer']))
+                        <a href="{{ route('buyer.register-face') }}" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">Temukan Wajah</a>
+                    @else
+                        <a href="{{ route('dashboard') }}" class="text-gray-300 hover:text-white transition-colors text-sm font-medium">Dashboard</a>
+                    @endif
+                @endauth
             </div>
 
             <div class="flex gap-4 items-center">
@@ -27,9 +34,57 @@
                     <input type="text" placeholder="Search..." class="bg-[#1f0e3d]/50 border border-purple-500/30 text-xs rounded-full py-1.5 pl-4 pr-8 text-white focus:outline-none focus:border-[#a855f7] w-36 md:w-44 font-sans placeholder:text-gray-400">
                     <span class="absolute right-3 top-2.5 text-[10px] opacity-70">🔍</span>
                 </div>
-                <a href="{{ route('login') }}" class="bg-[#5A2A8F] hover:bg-[#8a2be2] text-white text-xs font-semibold px-5 py-1.5 rounded-full transition-all">
-                    Sign In
-                </a>
+                @auth
+                    <!-- Cart Link -->
+                    <a href="{{ route('cart.index') }}" class="relative text-gray-300 hover:text-white transition-colors text-xs font-medium flex items-center gap-1">
+                        🛒 <span class="hidden md:inline">Keranjang</span>
+                        @php
+                            $cartCount = count(session()->get('cart', []));
+                        @endphp
+                        @if($cartCount > 0)
+                            <span class="bg-red-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-bold">{{ $cartCount }}</span>
+                        @endif
+                    </a>
+
+                    <!-- User Menu Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center gap-1 bg-[#5A2A8F] hover:bg-[#8a2be2] text-white text-xs font-semibold px-4 py-1.5 rounded-full transition-all">
+                            <span>{{ Auth::user()->name }}</span>
+                            <svg class="w-3 h-3 fill-current" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        
+                        <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-[#1f0e3d] border border-purple-500/30 rounded-xl shadow-xl z-50 py-1" style="display: none;">
+                            @if(in_array(Auth::user()->role, ['buyer', 'customer']))
+                                <a href="{{ route('buyer.register-face') }}" class="block px-4 py-2 text-xs text-gray-200 hover:bg-purple-500/20 hover:text-white transition-colors">
+                                    Temukan Wajah
+                                </a>
+                            @else
+                                <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-xs text-gray-200 hover:bg-purple-500/20 hover:text-white transition-colors">
+                                    Dashboard
+                                </a>
+                            @endif
+                            <a href="{{ route('face-scan.index') }}" class="block px-4 py-2 text-xs text-gray-200 hover:bg-purple-500/20 hover:text-white transition-colors">
+                                Cari Wajah
+                            </a>
+                            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-xs text-gray-200 hover:bg-purple-500/20 hover:text-white transition-colors">
+                                Profile
+                            </a>
+                            <hr class="border-purple-500/10 my-1">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-purple-500/20 hover:text-white transition-colors">
+                                    Log Out
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    <a href="{{ route('login') }}" class="bg-[#5A2A8F] hover:bg-[#8a2be2] text-white text-xs font-semibold px-5 py-1.5 rounded-full transition-all">
+                        Sign In
+                    </a>
+                @endauth
             </div>
         </div>
     </nav>
@@ -465,5 +520,25 @@
             <p>&copy; 2026 Fotato. Semua hak dilindungi. Dibuat dengan ❤️ untuk komunitas fotografi.</p>
         </div>
     </footer>
+
+    <!-- Login Success Pop-up Modal -->
+    @if(session('login_success'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 6000)" class="fixed bottom-6 right-6 z-50 max-w-sm bg-gradient-to-r from-[#5a2a8f] to-[#8a4fff] border border-purple-400/30 rounded-2xl shadow-2xl p-5 backdrop-blur-xl transition-all duration-500" style="display: none;">
+            <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl shrink-0">
+                    🎉
+                </div>
+                <div class="flex-grow">
+                    <h4 class="font-bold text-white text-sm mb-1">Berhasil Masuk!</h4>
+                    <p class="text-purple-100 text-xs leading-relaxed">
+                        {{ session('login_success') }}
+                    </p>
+                </div>
+                <button @click="show = false" class="text-white/60 hover:text-white text-lg font-bold transition-colors">
+                    &times;
+                </button>
+            </div>
+        </div>
+    @endif
 </body>
 </html>

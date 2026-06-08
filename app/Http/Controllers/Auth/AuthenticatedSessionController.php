@@ -33,7 +33,7 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended(route('admin.dashboard'));
         }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->route('landing')->with('login_success', 'Selamat! Anda berhasil login. Hai, senang bertemu dengan Anda lagi!');
     }
 
     /**

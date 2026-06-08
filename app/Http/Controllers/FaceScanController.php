@@ -19,7 +19,8 @@ class FaceScanController extends Controller
     public function index()
     {
         $albums = Cache::remember('face_scan_albums', 3600, function () {
-            return Album::with('photographer')
+            return Album::where('created_at', '>=', now()->subMonth())
+                ->with('photographer')
                 ->orderBy('event_date', 'desc')
                 ->get();
         });
@@ -57,6 +58,15 @@ class FaceScanController extends Controller
         $albumId = $request->album_id;
         $page = $request->input('page', 1);
         $perPage = 50;
+
+        // Check if the album is expired
+        $album = Album::findOrFail($albumId);
+        if ($album->created_at < now()->subMonth()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Album ini sudah kedaluwarsa.',
+            ], 404);
+        }
 
         try {
             // Get all photos with face embeddings in the selected album

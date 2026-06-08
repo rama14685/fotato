@@ -54,7 +54,7 @@
                                             </div>
                                             <div class="p-3">
                                                 <h5 class="text-white font-bold text-sm mb-1">{{ $item->photo->album->title }}</h5>
-                                                <p class="text-gray-400 text-xs mb-2">👤 {{ $item->photo->album->photographer->name }}</p>
+                                                <p class="text-gray-400 text-xs mb-2">👤 {{ $item->photo->album->photographer?->name ?? 'Admin' }}</p>
                                                 <p class="text-green-400 font-bold text-sm mb-3">Rp {{ number_format($item->price, 0, ',', '.') }}</p>
                                                 
                                                 @if($transaction->status === 'completed' || $transaction->status === 'paid')

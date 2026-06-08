@@ -20,12 +20,22 @@ class CheckoutController extends Controller
         }
 
         $totalPrice = 0;
-        foreach ($cart as $item) {
-            $totalPrice += $item['price'] * $item['quantity'];
+        $cartItems = [];
+        foreach ($cart as $photoId => $item) {
+            $photo = Photo::with('album')->find($photoId);
+            if ($photo) {
+                $totalPrice += $photo->price * $item['quantity'];
+                $cartItems[] = [
+                    'photo_id' => $photo->id,
+                    'title' => $photo->album->title,
+                    'price' => $photo->price,
+                    'quantity' => $item['quantity'],
+                ];
+            }
         }
 
         return view('checkout.index', [
-            'cartItems' => $cart,
+            'cartItems' => $cartItems,
             'totalPrice' => $totalPrice,
             'user' => Auth::user(),
         ]);
@@ -51,12 +61,12 @@ class CheckoutController extends Controller
         $firstPhotographerId = null;
 
         // Hitung total dan ambil photographer_id dari item pertama
-        foreach ($cart as $item) {
-            $totalAmount += $item['price'] * $item['quantity'];
-            
-            if (!$firstPhotographerId) {
-                $photo = Photo::find($item['photo_id']);
-                if ($photo) {
+        foreach ($cart as $photoId => $item) {
+            $photo = Photo::with('album')->find($photoId);
+            if ($photo) {
+                $totalAmount += $photo->price * $item['quantity'];
+                
+                if (!$firstPhotographerId) {
                     $firstPhotographerId = $photo->album->photographer_id;
                 }
             }
@@ -71,13 +81,16 @@ class CheckoutController extends Controller
         ]);
 
         // Buat transaction items
-        foreach ($cart as $item) {
-            TransactionItem::create([
-                'transaction_id' => $transaction->id,
-                'photo_id' => $item['photo_id'],
-                'price' => $item['price'],
-                'quantity' => $item['quantity'],
-            ]);
+        foreach ($cart as $photoId => $item) {
+            $photo = Photo::find($photoId);
+            if ($photo) {
+                TransactionItem::create([
+                    'transaction_id' => $transaction->id,
+                    'photo_id' => $photo->id,
+                    'price' => $photo->price,
+                    'quantity' => $item['quantity'],
+                ]);
+            }
         }
 
         // Clear cart

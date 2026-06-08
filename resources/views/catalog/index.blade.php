@@ -87,7 +87,7 @@
                             <div class="p-4">
                                 <h3 class="text-lg font-bold text-white mb-1 truncate group-hover:text-purple-400 transition">{{ $photo->album->title }}</h3>
                                 
-                                <p class="text-gray-400 text-sm mb-2">oleh <span class="font-medium">{{ $photo->album->photographer->name }}</span></p>
+                                <p class="text-gray-400 text-sm mb-2">oleh <span class="font-medium">{{ $photo->album->photographer?->name ?? 'Admin' }}</span></p>
 
                                 @if ($photo->album->location)
                                     <p class="text-gray-400 text-xs mb-3 flex items-center gap-1">

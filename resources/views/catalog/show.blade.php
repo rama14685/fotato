@@ -30,7 +30,7 @@
                     <h1 class="text-3xl font-bold text-white mb-2">{{ $photo->album->title }}</h1>
                     
                     <p class="text-gray-400 mb-6">
-                        Oleh <span class="font-bold text-purple-400">{{ $photo->album->photographer->name }}</span>
+                        Oleh <span class="font-bold text-purple-400">{{ $photo->album->photographer?->name ?? 'Admin' }}</span>
                     </p>
 
                     @if ($photo->album->location)
@@ -63,7 +63,7 @@
                         <input type="hidden" name="photo_id" value="{{ $photo->id }}">
                         <input type="hidden" name="title" value="{{ $photo->album->title }}">
                         <input type="hidden" name="price" value="{{ $photo->price }}">
-                        <input type="hidden" name="photographer" value="{{ $photo->album->photographer->name }}">
+                        <input type="hidden" name="photographer" value="{{ $photo->album->photographer?->name ?? 'Admin' }}">
                         <input type="hidden" name="image" value="{{ $photo->watermark_path }}">
 
                         <button type="submit" class="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition transform hover:scale-105">

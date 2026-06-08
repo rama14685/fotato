@@ -12,7 +12,6 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\FaceScanController;
 use App\Http\Controllers\BuyerFaceRegistrationController;
-use App\Http\Controllers\BuyerDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
@@ -71,11 +70,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/buyer/register-face', [BuyerFaceRegistrationController::class, 'store'])
         ->name('buyer.register-face.store');
 
-    // ─── Buyer Dashboard (Face Matcher) ────────────────────────────────────────
-    // Requires face to be registered first (buyer-face middleware)
-    Route::get('/buyer/dashboard', [BuyerDashboardController::class, 'index'])
-        ->middleware('buyer-face')
-        ->name('buyer.dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

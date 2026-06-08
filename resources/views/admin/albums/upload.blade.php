@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Foto – {{ $album->title }} | Fotlist Admin</title>
+    <title>Upload Foto – {{ $album->title }} | FOTATO Admin</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         /* ── Core Layout ────────────────────────────────── */
-        body { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); min-height: 100vh; font-family: 'Inter', sans-serif; color: #e2e8f0; }
+        body { background: #0d061a; min-height: 100vh; font-family: 'Inter', sans-serif; color: #ffffff; position: relative; }
+        .glow { position: fixed; width: 450px; height: 450px; background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0) 70%); border-radius: 50%; pointer-events: none; z-index: 0; }
 
         /* ── Glassmorphism Card ─────────────────────────── */
-        .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; }
+        .glass { background: rgba(168, 85, 247, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(168, 85, 247, 0.1); border-radius: 16px; position: relative; z-index: 10; }
 
         /* ── Drop Zone ──────────────────────────────────── */
-        #dropZone { border: 2px dashed rgba(139,92,246,0.5); border-radius: 12px; padding: 60px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; background: rgba(139,92,246,0.05); }
-        #dropZone:hover, #dropZone.drag-over { border-color: #8b5cf6; background: rgba(139,92,246,0.15); transform: scale(1.01); }
+        #dropZone { border: 2px dashed rgba(168, 85, 247, 0.3); border-radius: 12px; padding: 60px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; background: rgba(168, 85, 247, 0.02); }
+        #dropZone:hover, #dropZone.drag-over { border-color: #a855f7; background: rgba(168, 85, 247, 0.08); transform: scale(1.01); }
 
         /* ── Progress Items ─────────────────────────────── */
-        .progress-item { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 14px 18px; margin-bottom: 10px; border-left: 4px solid #6366f1; transition: all 0.3s; }
-        .progress-item.scanning { border-left-color: #f59e0b; animation: pulse 1.5s infinite; }
+        .progress-item { background: rgba(168, 85, 247, 0.02); border: 1px solid rgba(168, 85, 247, 0.08); border-radius: 10px; padding: 14px 18px; margin-bottom: 10px; border-left: 4px solid #8B4FFF; transition: all 0.3s; }
+        .progress-item.scanning { border-left-color: #d97706; animation: pulse 1.5s infinite; }
         .progress-item.uploading { border-left-color: #3b82f6; }
         .progress-item.success  { border-left-color: #10b981; }
         .progress-item.error    { border-left-color: #ef4444; }
@@ -33,19 +34,19 @@
         .photo-thumb:hover .del-btn { display:flex; }
 
         /* ── Buttons ────────────────────────────────────── */
-        .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); color:#fff; border:none; border-radius:10px; padding:12px 28px; font-weight:700; cursor:pointer; transition:all .2s; box-shadow:0 4px 15px rgba(99,102,241,.4); }
-        .btn-primary:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 20px rgba(99,102,241,.5); }
+        .btn-primary { background: linear-gradient(135deg, #5A2A8F 0%, #8A4FFF 100%); color:#fff; border:none; border-radius:10px; padding:12px 28px; font-weight:700; cursor:pointer; transition:all .2s; box-shadow:0 4px 15px rgba(139,92,246,.2); }
+        .btn-primary:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 20px rgba(139,92,246,.4); }
         .btn-primary:disabled { opacity:.5; cursor:not-allowed; }
-        .btn-secondary { background:rgba(255,255,255,0.08); color:#cbd5e1; border:1px solid rgba(255,255,255,.15); border-radius:10px; padding:12px 24px; font-weight:600; cursor:pointer; transition:all .2s; text-decoration:none; display:inline-block; }
-        .btn-secondary:hover { background:rgba(255,255,255,0.15); }
+        .btn-secondary { background:rgba(168, 85, 247, 0.05); color:#c084fc; border:1px solid rgba(168, 85, 247, 0.25); border-radius:10px; padding:12px 24px; font-weight:600; cursor:pointer; transition:all .2s; text-decoration:none; display:inline-block; }
+        .btn-secondary:hover { background:rgba(168, 85, 247, 0.15); }
 
         /* ── Loading bar ────────────────────────────────── */
-        .progress-bar-wrap { background: rgba(255,255,255,.1); border-radius:4px; height:6px; overflow:hidden; margin-top:8px; }
-        .progress-bar-fill { height:100%; border-radius:4px; transition: width .3s ease; background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+        .progress-bar-wrap { background: rgba(255,255,255,.05); border-radius:4px; height:6px; overflow:hidden; margin-top:8px; }
+        .progress-bar-fill { height:100%; border-radius:4px; transition: width .3s ease; background: linear-gradient(90deg, #5A2A8F, #8A4FFF); }
 
         /* ── Status badge ────────────────────────────────── */
         .status-badge { display:inline-flex; align-items:center; gap:6px; font-size:.8rem; font-weight:600; padding:4px 12px; border-radius:20px; }
-        .badge-scanning { background:rgba(245,158,11,.2); color:#f59e0b; }
+        .badge-scanning { background:rgba(217,119,6,.2); color:#f59e0b; }
         .badge-upload   { background:rgba(59,130,246,.2); color:#60a5fa; }
         .badge-done     { background:rgba(16,185,129,.2); color:#34d399; }
         .badge-error    { background:rgba(239,68,68,.2); color:#f87171; }
@@ -53,24 +54,32 @@
     </style>
 </head>
 <body>
-<div class="max-w-4xl mx-auto px-4 py-10">
+    <!-- Background Glows -->
+    <div class="glow top-[-10%] left-[-10%]"></div>
+    <div class="glow bottom-[-10%] right-[-10%]"></div>
+
+<div class="max-w-4xl mx-auto px-4 py-10 relative z-10">
 
     {{-- Breadcrumb --}}
-    <div class="mb-6 flex items-center gap-3 text-sm text-slate-400">
-        <a href="{{ route('admin.albums.index') }}" class="hover:text-white transition">← Albums</a>
+    <div class="mb-6 flex items-center gap-3 text-sm text-purple-300/40 font-sans">
+        <a href="{{ route('admin.albums.index') }}" class="hover:text-white transition">Albums</a>
         <span>/</span>
         <a href="{{ route('admin.albums.show', $album) }}" class="hover:text-white transition">{{ $album->title }}</a>
         <span>/</span>
-        <span class="text-white">Upload Foto</span>
+        <span class="text-purple-300/80">Upload Foto</span>
     </div>
 
     {{-- Header --}}
-    <div class="glass p-6 mb-8" style="background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(139,92,246,.2));">
+    <div class="glass p-6 mb-8 bg-gradient-to-r from-[#5A2A8F]/20 to-[#8A4FFF]/10 border border-purple-500/20">
         <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl" style="background:rgba(99,102,241,.3);">📸</div>
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center bg-[#5A2A8F]/20 text-[#a855f7] border border-purple-500/20">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316A2.192 2.192 0 0 0 14.502 4h-5c-.7 0-1.363.336-1.78.918l-.895 1.257ZM12 10.5a3.75 3.75 0 1 1 0 7.5 3.75 3.75 0 0 1 0-7.5ZM12 12a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
+                </svg>
+            </div>
             <div>
-                <h1 class="text-2xl font-bold text-white">{{ $album->title }}</h1>
-                <p class="text-slate-300 text-sm mt-1">
+                <h1 class="text-2xl font-bold font-display text-white">{{ $album->title }}</h1>
+                <p class="text-purple-300/60 text-sm mt-1">
                     {{ $album->location ?? 'No location' }}
                     @if($album->event_date)
                         &bull; {{ $album->event_date->format('d M Y') }}
@@ -82,60 +91,67 @@
     </div>
 
     {{-- Alert info --}}
-    <div class="glass p-4 mb-6 border-l-4" style="border-left-color:#f59e0b;">
-        <div class="flex items-start gap-3">
-            <span class="text-2xl">🤖</span>
+    <div class="glass p-5 mb-6 border-l-4 border-l-purple-500 bg-[#0f0720]/60">
+        <div class="flex items-start gap-4">
+            <div class="text-[#a855f7] mt-0.5 shrink-0">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 21l8.982-8.983m-8.982 8.983a9.01 9.01 0 0 1-3.078-10.457m3.078 10.457A9.01 9.01 0 0 0 17.92 11.23M18 7.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                </svg>
+            </div>
             <div>
-                <p class="font-semibold text-amber-400 mb-1">Face Detection Aktif</p>
-                <p class="text-slate-300 text-sm">Setiap foto akan <strong>dianalisis otomatis</strong> menggunakan AI (face-api.js) di browser Anda sebelum diupload. Wajah yang terdeteksi disimpan ke database untuk fitur pencocokan wajah pembeli.</p>
+                <p class="font-bold text-purple-300 mb-1 text-sm">Face Detection Aktif</p>
+                <p class="text-purple-300/60 text-xs leading-relaxed">Setiap foto akan dianalisis secara otomatis menggunakan AI (face-api.js) langsung di browser Anda sebelum diunggah. Wajah yang terdeteksi disimpan untuk mempermudah pencarian foto pembeli.</p>
             </div>
         </div>
     </div>
 
     {{-- Upload Card --}}
-    <div class="glass p-8 mb-8">
+    <div class="glass p-8 mb-8 bg-[#0f0720]/40">
         <div id="messageBox"></div>
 
         {{-- Drop Zone --}}
         <div id="dropZone">
-            <div class="text-5xl mb-4">☁️</div>
-            <h3 class="text-xl font-bold text-white mb-2">Drag & drop foto di sini</h3>
-            <p class="text-slate-400 text-sm mb-4">atau klik untuk memilih file</p>
+            <div class="text-purple-400 flex justify-center mb-4">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2 font-display">Drag & drop foto di sini</h3>
+            <p class="text-purple-300/40 text-sm mb-4">atau klik untuk memilih file</p>
             <div class="flex gap-3 justify-center flex-wrap">
-                <label class="btn-secondary text-sm cursor-pointer">
-                    📷 Pilih File
+                <label class="btn-secondary text-xs cursor-pointer">
+                    Pilih File
                     <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
                 </label>
-                <label class="btn-secondary text-sm cursor-pointer">
-                    📂 Pilih Folder
+                <label class="btn-secondary text-xs cursor-pointer">
+                    Pilih Folder
                     <input type="file" id="folderInput" accept="image/*" webkitdirectory directory class="hidden">
                 </label>
             </div>
         </div>
 
         {{-- Price Input --}}
-        <div class="mt-6 p-5 rounded-xl" style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);">
-            <label for="priceInput" class="block text-sm font-semibold text-slate-300 mb-2">💰 Harga per Foto (Rp)</label>
+        <div class="mt-6 p-5 rounded-xl border border-purple-500/10 bg-[#1f0e3d]/20">
+            <label for="priceInput" class="block text-xs font-bold text-purple-300 mb-2 uppercase tracking-wider">Harga per Foto (Rp)</label>
             <input type="number" id="priceInput" value="50000" min="0" step="1000"
-                   class="w-full px-4 py-3 rounded-lg text-white font-semibold text-lg"
-                   style="background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); outline:none;">
+                   class="w-full px-4 py-3 rounded-lg text-white font-bold text-lg bg-black/30 border border-purple-500/20 focus:border-purple-500 outline-none transition">
         </div>
 
         {{-- Action Buttons --}}
         <div class="flex gap-4 mt-6 flex-wrap">
-            <button id="startBtn" class="btn-primary" disabled>
-                🚀 Scan &amp; Upload Foto
+            <button id="startBtn" class="btn-primary text-sm" disabled>
+                Scan & Upload Foto
             </button>
-            <a href="{{ route('admin.albums.show', $album) }}" class="btn-secondary">
-                ← Kembali
+            <a href="{{ route('admin.albums.show', $album) }}" class="btn-secondary text-sm">
+                Kembali
             </a>
         </div>
 
         {{-- Overall Progress Bar --}}
         <div id="overallProgress" class="mt-6 hidden">
-            <div class="flex justify-between text-sm text-slate-400 mb-2">
-                <span id="progressLabel">Memproses...</span>
-                <span id="progressPercent">0%</span>
+            <div class="flex justify-between text-xs text-purple-300/40 mb-2">
+                <span id="progressLabel" class="font-medium">Memproses...</span>
+                <span id="progressPercent" class="font-bold">0%</span>
             </div>
             <div class="progress-bar-wrap">
                 <div id="progressBarFill" class="progress-bar-fill" style="width:0%"></div>
@@ -145,13 +161,13 @@
 
     {{-- Per-file Progress List --}}
     <div id="progressList" class="mb-8 hidden">
-        <h3 class="text-lg font-bold text-white mb-4">📋 Status Upload</h3>
+        <h3 class="text-lg font-bold font-display text-white mb-4">Status Upload</h3>
         <div id="progressItems"></div>
     </div>
 
     {{-- Uploaded Photos Grid --}}
     <div id="photosSection" class="hidden">
-        <h3 class="text-lg font-bold text-white mb-4">✅ Foto Berhasil Diupload</h3>
+        <h3 class="text-lg font-bold font-display text-white mb-4">Foto Berhasil Diupload</h3>
         <div id="photoGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
     </div>
 
@@ -194,7 +210,7 @@ let isProcessing    = false;
 // ════════════════════════════════════════════════════════════════════════════
 async function loadModels() {
     if (modelsLoaded) return;
-    showMessage('⏳ Memuat model face detection…', 'info');
+    showMessage('Memuat model face detection…', 'info');
     try {
         await Promise.all([
             faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
@@ -203,10 +219,10 @@ async function loadModels() {
         ]);
         modelsLoaded = true;
         clearMessages();
-        showMessage('✅ Model face detection siap digunakan.', 'success');
+        showMessage('Model face detection siap digunakan.', 'success');
         setTimeout(clearMessages, 3000);
     } catch (err) {
-        showMessage('⚠️ Gagal memuat model face detection. Foto tetap akan diupload tanpa deteksi wajah.', 'warning');
+        showMessage('Gagal memuat model face detection. Foto tetap akan diupload tanpa deteksi wajah.', 'warning');
     }
 }
 
@@ -237,10 +253,14 @@ dropZone.addEventListener('drop', e => {
 function updateDropZoneText() {
     const totalMB = (selectedFiles.reduce((s, f) => s + f.size, 0) / 1048576).toFixed(1);
     dropZone.innerHTML = `
-        <div class="text-5xl mb-4">✅</div>
-        <h3 class="text-xl font-bold text-white mb-1">${selectedFiles.length} foto dipilih</h3>
-        <p class="text-slate-400 text-sm">${totalMB} MB total &bull;
-            <button type="button" onclick="resetSelection()" class="text-purple-400 hover:underline ml-1">Ganti pilihan</button>
+        <div class="text-[#34d399] flex justify-center mb-4">
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-1 font-display">${selectedFiles.length} foto dipilih</h3>
+        <p class="text-purple-300/40 text-sm">${totalMB} MB total &bull;
+            <button type="button" onclick="resetSelection()" class="text-purple-400 hover:underline ml-1 font-semibold">Ganti pilihan</button>
         </p>
     `;
 }
@@ -250,16 +270,20 @@ function resetSelection() {
     fileInput.value = '';
     folderInput.value = '';
     dropZone.innerHTML = `
-        <div class="text-5xl mb-4">☁️</div>
-        <h3 class="text-xl font-bold text-white mb-2">Drag & drop foto di sini</h3>
-        <p class="text-slate-400 text-sm mb-4">atau klik untuk memilih file</p>
+        <div class="text-purple-400 flex justify-center mb-4">
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+            </svg>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-2 font-display">Drag & drop foto di sini</h3>
+        <p class="text-purple-300/40 text-sm mb-4">atau klik untuk memilih file</p>
         <div class="flex gap-3 justify-center flex-wrap">
-            <label class="btn-secondary text-sm cursor-pointer">
-                📷 Pilih File
+            <label class="btn-secondary text-xs cursor-pointer">
+                Pilih File
                 <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
             </label>
-            <label class="btn-secondary text-sm cursor-pointer">
-                📂 Pilih Folder
+            <label class="btn-secondary text-xs cursor-pointer">
+                Pilih Folder
                 <input type="file" id="folderInput" accept="image/*" webkitdirectory directory class="hidden">
             </label>
         </div>
@@ -273,8 +297,8 @@ function resetSelection() {
 function updateStartBtn() {
     startBtn.disabled = selectedFiles.length === 0 || isProcessing;
     startBtn.textContent = selectedFiles.length > 0
-        ? `🚀 Scan & Upload ${selectedFiles.length} Foto`
-        : '🚀 Scan & Upload Foto';
+        ? `Scan & Upload ${selectedFiles.length} Foto`
+        : 'Scan & Upload Foto';
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -299,13 +323,13 @@ startBtn.addEventListener('click', async () => {
         el.id = `item-${idx}`;
         el.innerHTML = `
             <div class="flex items-center justify-between">
-                <span class="font-medium text-sm text-slate-200 truncate max-w-xs">${file.name}</span>
-                <span class="status-badge badge-scanning" id="badge-${idx}">⏳ Antri…</span>
+                <span class="font-bold text-sm text-purple-200 truncate max-w-xs">${file.name}</span>
+                <span class="status-badge badge-scanning" id="badge-${idx}">Antri…</span>
             </div>
             <div class="progress-bar-wrap mt-2">
                 <div class="progress-bar-fill" id="bar-${idx}" style="width:0%"></div>
             </div>
-            <p class="text-xs text-slate-400 mt-1" id="msg-${idx}"></p>
+            <p class="text-xs text-purple-300/40 mt-1.5" id="msg-${idx}"></p>
         `;
         progressItems.appendChild(el);
         return el;
@@ -332,9 +356,9 @@ startBtn.addEventListener('click', async () => {
         setOverall(`Memproses ${i + 1} / ${total}: ${file.name}`);
 
         // ── Step 1: Scan faces ───────────────────────────────────────────────
-        itemEl.classList.add('scanning');
+        itemEl.class = 'progress-item scanning';
         badgeEl.className = 'status-badge badge-scanning';
-        badgeEl.textContent = '🔍 Scanning wajah…';
+        badgeEl.textContent = 'Scanning wajah…';
         barEl.style.width = '20%';
         msgEl.textContent = 'Mendeteksi wajah dalam foto…';
 
@@ -367,7 +391,7 @@ startBtn.addEventListener('click', async () => {
         itemEl.classList.remove('scanning');
         itemEl.classList.add('uploading');
         badgeEl.className = 'status-badge badge-upload';
-        badgeEl.textContent = '📤 Uploading…';
+        badgeEl.textContent = 'Uploading…';
 
         const formData = new FormData();
         formData.append('photo', file);
@@ -389,7 +413,7 @@ startBtn.addEventListener('click', async () => {
                 itemEl.classList.remove('uploading');
                 itemEl.classList.add('success');
                 badgeEl.className = 'status-badge badge-done';
-                badgeEl.textContent = `✅ ${data.photo.face_count} wajah`;
+                badgeEl.textContent = `Selesai (${data.photo.face_count} wajah)`;
                 msgEl.textContent = data.message;
 
                 // Add to photo grid
@@ -401,16 +425,16 @@ startBtn.addEventListener('click', async () => {
             itemEl.classList.remove('uploading');
             itemEl.classList.add('error');
             badgeEl.className = 'status-badge badge-error';
-            badgeEl.textContent = '❌ Gagal';
+            badgeEl.textContent = 'Gagal';
             msgEl.textContent = uploadErr.message;
         }
 
         done++;
-        setOverall(done < total ? `Memproses ${done + 1} / ${total}…` : '🎉 Selesai!');
+        setOverall(done < total ? `Memproses ${done + 1} / ${total}…` : 'Selesai!');
     }
 
     // All done
-    progressLabel.textContent   = `✅ ${done} foto diproses`;
+    progressLabel.textContent   = `${done} foto diproses`;
     progressPercent.textContent = '100%';
     progressBarFill.style.width = '100%';
 
@@ -420,7 +444,7 @@ startBtn.addEventListener('click', async () => {
 
     isProcessing = false;
     startBtn.disabled = false;
-    startBtn.textContent = '🚀 Upload Lebih Banyak';
+    startBtn.textContent = 'Upload Lebih Banyak';
 });
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -431,7 +455,7 @@ function addPhotoToGrid(photoData) {
     thumb.className = 'photo-thumb';
     thumb.innerHTML = `
         <img src="${photoData.path}" alt="${photoData.original_name}" loading="lazy">
-        <div class="face-badge">👤 ${photoData.face_count}</div>
+        <div class="face-badge">Wajah: ${photoData.face_count}</div>
         <button class="del-btn" data-id="${photoData.id}" title="Hapus foto ini">×</button>
     `;
     photoGrid.appendChild(thumb);
@@ -466,12 +490,13 @@ function showMessage(msg, type = 'info') {
         success: 'rgba(16,185,129,.15);border-color:rgba(16,185,129,.4);color:#34d399',
         error:   'rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);color:#f87171',
         warning: 'rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fbbf24',
-        info:    'rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:#60a5fa',
+        info:    'rgba(168,85,247,.15);border-color:rgba(168,85,247,.4);color:#c084fc',
     };
     const style = colors[type] || colors.info;
     messageBox.innerHTML += `<div style="padding:12px 16px;border-radius:10px;border:1px solid;background:${style};margin-bottom:10px;font-size:.875rem;">${msg}</div>`;
 }
 
+// Clear Messages function
 function clearMessages() {
     messageBox.innerHTML = '';
 }

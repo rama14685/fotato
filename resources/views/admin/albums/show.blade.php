@@ -6,14 +6,14 @@
     <div class="mb-8">
         <a href="{{ route('admin.albums.index') }}" class="text-blue-600 hover:text-blue-800 mb-4 inline-block">← Kembali</a>
         <h1 class="text-3xl font-bold text-gray-900">{{ $album->title }}</h1>
-        <p class="text-gray-600 mt-1">{{ $album->photographer->name }} • {{ $album->location }}</p>
+        <p class="text-gray-600 mt-1">{{ $album->photographer?->name ?? 'Admin / Sistem' }} • {{ $album->location }}</p>
     </div>
 
     <!-- Album Info Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow p-6">
             <p class="text-gray-600 text-sm font-medium">Fotografer</p>
-            <p class="text-lg font-bold mt-2 text-gray-900">{{ $album->photographer->name }}</p>
+            <p class="text-lg font-bold mt-2 text-gray-900">{{ $album->photographer?->name ?? 'Admin / Sistem' }}</p>
         </div>
         <div class="bg-white rounded-lg shadow p-6">
             <p class="text-gray-600 text-sm font-medium">Jumlah Foto</p>
@@ -26,21 +26,19 @@
     </div>
 
     <!-- Action Buttons -->
-    <div class="mb-8 flex gap-3">
-        <a href="{{ route('admin.albums.upload', $album) }}" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition">
-            📤 Upload Foto
+        <a href="{{ route('admin.albums.upload', $album) }}" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition inline-flex items-center gap-1.5">
+            <span>Upload Foto</span>
         </a>
-        <a href="{{ route('admin.albums.edit', $album) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition">
-            ✏️ Edit Album
+        <a href="{{ route('admin.albums.edit', $album) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition inline-flex items-center gap-1.5">
+            <span>Edit Album</span>
         </a>
         <form method="POST" action="{{ route('admin.albums.destroy', $album) }}" style="display: inline;">
             @csrf
             @method('DELETE')
-            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition" onclick="return confirm('Hapus album ini? Semua foto akan dihapus.')">
-                🗑️ Hapus Album
+            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition inline-flex items-center gap-1.5" onclick="return confirm('Hapus album ini? Semua foto akan dihapus.')">
+                <span>Hapus Album</span>
             </button>
         </form>
-    </div>
 
     <!-- Photos Section -->
     <div class="bg-white rounded-lg shadow">
@@ -77,7 +75,7 @@
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white text-sm py-2 rounded transition">
-                                🗑️ Hapus Foto
+                                Hapus Foto
                             </button>
                         </form>
                     </div>

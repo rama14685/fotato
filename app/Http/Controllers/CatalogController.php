@@ -10,7 +10,9 @@ class CatalogController extends Controller
     // Menampilkan semua foto dari semua photographer
     public function index(Request $request)
     {
-        $query = Photo::with(['album', 'album.photographer']);
+        $query = Photo::whereHas('album', function($q) {
+            $q->where('created_at', '>=', now()->subMonth());
+        })->with(['album', 'album.photographer']);
 
         // Search berdasarkan location (album location)
         if ($request->filled('location')) {
@@ -60,6 +62,10 @@ class CatalogController extends Controller
     // Menampilkan detail foto
     public function show(Photo $photo)
     {
+        if ($photo->album->created_at < now()->subMonth()) {
+            abort(404, 'Foto ini sudah kedaluwarsa.');
+        }
+
         $photo->load(['album', 'album.photographer']);
         
         return view('catalog.show', compact('photo'));

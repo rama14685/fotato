@@ -3,14 +3,14 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <!-- Header -->
-    <div class="mb-8">
+    <div class="mb-8 max-w-2xl mx-auto">
         <a href="{{ route('admin.albums.index') }}" class="text-gray-300 hover:text-white mb-4 inline-block">← Kembali</a>
         <h1 class="text-3xl font-bold gradient-text">Buat Album Baru</h1>
         <p class="text-gray-400 mt-1">Buat koleksi foto untuk fotografer</p>
     </div>
 
     <!-- Form -->
-    <div class="glass-card rounded-lg p-8 max-w-2xl">
+    <div class="glass-card rounded-lg p-8 max-w-2xl mx-auto">
         <form method="POST" action="{{ route('admin.albums.store') }}" enctype="multipart/form-data">
             @csrf
 
@@ -69,7 +69,9 @@
                     <input type="file" name="thumbnail" id="thumbnail" accept="image/*" class="hidden" onchange="previewThumbnail(event)">
                     <label for="thumbnail" class="cursor-pointer">
                         <div id="thumbnail-preview" class="mb-4">
-                            <div class="text-4xl mb-2">📸</div>
+                            <svg class="w-12 h-12 text-purple-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316A2.192 2.192 0 0 0 14.502 4h-5c-.7 0-1.363.336-1.78.918l-.895 1.257ZM12 10.5a3.75 3.75 0 1 1 0 7.5 3.75 3.75 0 0 1 0-7.5ZM12 12a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
+                            </svg>
                             <p class="text-gray-400 text-sm">Klik untuk upload thumbnail</p>
                             <p class="text-gray-500 text-xs mt-1">JPG, PNG, GIF (Max 5MB)</p>
                         </div>

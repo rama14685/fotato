@@ -77,7 +77,7 @@
                             <div class="text-gray-300 text-sm space-y-1 mb-4">
                                 <p>📍 {{ $album->location }}</p>
                                 <p>📅 {{ \Carbon\Carbon::parse($album->event_date)->format('d F Y') }}</p>
-                                <p>👤 {{ $album->photographer->name }}</p>
+                                <p>👤 {{ $album->photographer?->name ?? 'Admin' }}</p>
                                 <p>🖼️ {{ $album->photo_count }} foto</p>
                             </div>
 

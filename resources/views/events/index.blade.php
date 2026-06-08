@@ -29,9 +29,15 @@
                     <span class="absolute right-3 top-2.5 text-[10px] opacity-70">🔍</span>
                 </div>
                 @auth
-                    <a href="{{ route('dashboard') }}" class="bg-[#8c66ff] hover:bg-[#a855f7] text-black text-xs font-semibold px-5 py-1.5 rounded-full transition-all">
-                        Dashboard
-                    </a>
+                    @if(in_array(Auth::user()->role, ['buyer', 'customer']))
+                        <a href="{{ route('buyer.register-face') }}" class="bg-[#8c66ff] hover:bg-[#a855f7] text-black text-xs font-semibold px-5 py-1.5 rounded-full transition-all">
+                            Temukan Wajah
+                        </a>
+                    @else
+                        <a href="{{ route('dashboard') }}" class="bg-[#8c66ff] hover:bg-[#a855f7] text-black text-xs font-semibold px-5 py-1.5 rounded-full transition-all">
+                            Dashboard
+                        </a>
+                    @endif
                 @else
                     <a href="{{ route('login') }}" class="bg-[#8c66ff] hover:bg-[#a855f7] text-black text-xs font-semibold px-5 py-1.5 rounded-full transition-all">
                         Sign In
